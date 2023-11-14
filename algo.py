@@ -17,6 +17,7 @@ subjects = {
     5: "algebra_lab"
 }
 counts = {1: 1, 2: 3, 3: 1, 4: 2, 5: 3}
+rooms = {1: 2222, 2: 2122}
 
 
 def lessons_group(group):
@@ -41,52 +42,60 @@ uncomplete calculations formula
 жёстко влияет на производительность bound модуля
 """
 
-mapa = {}
+map_tsgndpr = {}
 
 
-def tsgndp(t=0, s=0, g=0, n=0, d=0, p=0):
+def tsgndpr(t=0, s=0, g=0, n=0, d=0, p=0, r=0):
     # 100 teachers, 100 subjects, 100 groups, 60 times in a week,
     # 6 days in a week, 7 periods in a day
     h = int(
-        hashlib.sha1(f"{t}_{s}_{g}_{n}_{d}_{p}".encode("utf-8")).hexdigest(),
+        hashlib.sha1(f"{t}_{s}_{g}_{n}_{d}_{p}_{r}".encode("utf-8")).hexdigest(),
         16) % 1000000
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in mapa.keys() and mapa[h] != (t, s, g, n, d, p):
+    while h in map_tsgndpr.keys() and map_tsgndpr[h] != (t, s, g, n, d, p, r):
         h = int(hashlib.sha1(
-            f"{t}_{s}_{g}_{n}_{d}_{p}_{i}".encode("utf-8")).hexdigest(),
+            f"{t}_{s}_{g}_{n}_{d}_{p}_{r}_{i}".encode("utf-8")).hexdigest(),
                 16) % 1000000
         i += 1
+    map_tsgndpr[h] = (t, s, g, n, d, p, r)
     return h
 
 
 def tsgndp_calc(t, s, g, n, d, p):
-    return tsgndp(t, s, g, n, d, p)
+    return tsgndpr(t, s, g, n, d, p)
 
 
 def tsgnd_calc(t, s, g, n, d):
-    return tsgndp(t, s, g, n, d)
+    return tsgndpr(t, s, g, n, d)
+
+
+def tdpr_calc(t, d, p, r):
+    return tsgndpr(t=t, d=d, p=p, r=r)
 
 
 def tdp_calc(t, d, p):
     # return int(1e17) + tsgndp(t=t, d=d, p=p)
-    return tsgndp(t, 0, 0, 0, d, p)
+    return tsgndpr(t=t, d=d, p=p)
 
 
 def gdp_calc(g, d, p):
-    return tsgndp(0, 0, g, 0, d, p)
+    return tsgndpr(g=g, d=d, p=p)
 
 
 def gd_calc(g, d):
-    return tsgndp(0, 0, g, 0, d, 0)
+    return tsgndpr(g=g, d=d)
 
 
 def td_calc(t, d):
-    return tsgndp(t, 0, 0, 0, d, 0)
+    return tsgndpr(t=t, d=d)
 
 
 def tp_calc(t, p):
-    return tsgndp(t, 0, 0, 0, 0, p)
+    return tsgndpr(t=t, p=p)
+
+
+map_iktdp = {}
 
 
 def IKTDP(k, t, d=0, p=0):
@@ -98,11 +107,12 @@ that 1 ≤ k ≤ duration(d)−2 and min(periods(d))+1 ≤ p ≤ max(periods(d))
         16) % 1000000
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in mapa.keys() and mapa[h] != (k, t, d, p):
+    while h in map_iktdp.keys() and map_iktdp[h] != (k, t, d, p):
         h = int(
             hashlib.sha512(f"{k}_{t}_{d}_{p}_{i}".encode("utf-8")).hexdigest(),
             16) % 1000000
         i += 1
+    map_iktdp[h] = (k, t, d, p)
     return h
 
 
@@ -122,6 +132,9 @@ def IKT(k, t):
     return IKTDP(k, t)
 
 
+map_lkgd = {}
+
+
 def LKGD(k, g, d):
     """Duration of a working day for student groups is encoded using variables l^k_gd which are formed for each group
     g, day d, and number k <= |periods(d)|. The variable l^k_gd represents the fact that teaching time for a group g
@@ -131,11 +144,12 @@ def LKGD(k, g, d):
         16) % 1000000
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in mapa.keys() and mapa[h] != (k, g, d):
+    while h in map_lkgd.keys() and map_lkgd[h] != (k, g, d):
         h = int(
             hashlib.md5(f"{k}_{g}_{d}_{i}".encode("utf-8")).hexdigest(),
             16) % 1000000
         i += 1
+    map_lkgd[h] = (k, g, d)
     return h
 
 
@@ -235,8 +249,25 @@ todo 28. x_tsgnd => x'_tsgndp1 V ... V x'_tsgndp_n - The requirement that a less
 
 todo 29. x'_tsgndp => (... last p .13
 
+30. x_tsgnd => not x_tsg(n+1)(d+1) for each day d except the last - если предметы не должны идти 2 дня подряд
+
+todo 31. x_tsgndpr => x_tsgndp 
+         x_tdpr => x_tdp
+         x_tsgndp => V_r x_tsgndpr
+         x_tdp => V_r x_tdpr
 Idle periods constrains, p.13
 """
+
+"""begin 30"""
+
+
+def consecutive_days(t, s, g, n):
+    """"n - ый раз проводится в неделе (как я понял)"""
+    for d in range(1, 6):
+        clauses.append([-tsgnd_calc(t, s, g, n, d), -tsgnd_calc(t, s, g, n + 1, d + 1)])
+
+
+"""end 30"""
 
 """begin 27"""
 
@@ -304,6 +335,14 @@ for t in teachers.keys():
                         """begin 3"""
                         clauses.append([-x_tsgndp, x_tdp])
                         """end 3"""
+                        """begin 31 pt1"""
+                        v_r_x_tsgndpr = []
+                        for r in rooms.keys():
+                            x_tsgndpr = tsgndpr(t, s, g, n, d, p, r)
+                            v_r_x_tsgndpr.append(x_tsgndpr)
+                            clauses.append([-x_tsgndpr, x_tsgndp])
+                        clauses.append([-x_tsgndp, *v_r_x_tsgndpr])
+                        """end 31 pt1"""
                     """begin 2"""
                     clauses.append([-tsgnd_calc(t, s, g, n, d),
                                     *v_p_x_tsgndp])
@@ -355,6 +394,14 @@ for t in teachers:
             clauses.append([-x_tdp, x_td])
             """end 7"""
             v_p_x_tdp.append(x_tdp)
+            v_r_tdpr = []
+            """begin 31 pt2"""
+            for r in rooms.keys():
+                x_tdpr = tdpr_calc(t, d, p, r)
+                v_r_tdpr.append(x_tdpr)
+                clauses.append([-x_tdpr, x_tdp])
+            clauses.append([-x_tdp, *v_r_tdpr])
+            """end 31 pt2"""
         """begin 8"""
         clauses.append([-x_td, *v_p_x_tdp])
         """end 8"""
