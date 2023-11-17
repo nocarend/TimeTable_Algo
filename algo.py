@@ -7,7 +7,8 @@ from pysat.formula import CNF
 solver = pysat.solvers.Glucose3()
 
 period_length = 2  # 2 hours
-periods = 7  # number of lessons
+days = range(1, 7)
+periods = range(1, 8)
 duration = 1  #
 
 groups = {1: "21215"}
@@ -217,10 +218,10 @@ clauses = []
 
 todo 19. cardinality({v1, ..., v_k}) <= m - максимум m переменных могут быть истины.
 
-todo 20. single({x_tsgnd | d in days}) и for each d in days single({x'_tsgndp | p in periods(d)})
+20. single({x_tsgnd | d in days}) и for each d in days single({x'_tsgndp | p in periods(d)})
  - каждый предмет шедулится ровно один раз в расписании ??? непон
  
-21. single({x_tsgndp | tsgn in lessons(g)}) - каждая группа может находиться на одной паре одновременно
+todo 21. single({x_tsgndp | tsgn in lessons(g)}) for each g, d, p - каждая группа может находиться на одной паре одновременно
 
 todo 22. x_tsg1ndp <=> x_tsgjndp, 1 < j <= k - каждый учитель может вести один предмет в одно премя.
  Однако несколько групп могут вестись одновременно. ??? надо ли
@@ -251,12 +252,46 @@ todo 29. x'_tsgndp => (... last p .13
 
 30. x_tsgnd => not x_tsg(n+1)(d+1) for each day d except the last - если предметы не должны идти 2 дня подряд
 
-todo 31. x_tsgndpr => x_tsgndp 
+31. x_tsgndpr => x_tsgndp 
          x_tdpr => x_tdp
          x_tsgndp => V_r x_tsgndpr
          x_tdp => V_r x_tdpr
-Idle periods constrains, p.13
-"""
+         
+32. single{x_tdpr | t in teachers} for each d, p, r. - всего один учитель может находиться в конкретном месте и 
+времени.
+
+todo 33. single{x_tdpr | r in rooms} for each d, p, r - всего одна комната может быть занята учителем в данное время. ??? странное условие, пока не делать.
+
+34. v_d x_tsgnd - каждый урок должен быть проведен
+
+
+Idle periods constrains, p.13"""
+
+"""begin 33"""
+for d in days:
+    for p in periods:
+        for t in teachers.keys():
+            v_r_x_tdpr = []
+            for r in rooms:
+                v_r_x_tdpr.append(tdpr_calc(t, d, p, r))
+            s = single(v_r_x_tdpr)
+            for clause in s:
+                clauses.append(clause)
+
+"""end 33"""
+
+"""begin 32"""
+for d in days:
+    for p in periods:
+        for r in rooms:
+            v_t_x_tdpr = []
+            for t in teachers.keys():
+                v_t_x_tdpr.append(tdpr_calc(t, d, p, r))
+            s = single(v_t_x_tdpr)
+            for clause in s:
+                clauses.append(clause)
+
+"""end 32"""
 
 """begin 30"""
 
@@ -321,7 +356,9 @@ for t in teachers.keys():
     for s in tsgn.keys():
         for g in tsgn[s].keys():
             for n in range(1, tsgn[s][g] + 1):
-                for d in range(1, 7):
+                v_d_x_tsgnd = []
+                for d in days:
+                    v_d_x_tsgnd.append(tsgnd_calc(t, s, g, n, d))
                     v_p_x_tsgndp = []
                     for p in range(1, 8):
                         x_tsgndp = tsgndp_calc(t, s, g, n, d, p)
@@ -347,7 +384,19 @@ for t in teachers.keys():
                     clauses.append([-tsgnd_calc(t, s, g, n, d),
                                     *v_p_x_tsgndp])
                     """end 2"""
-
+                    """begin 20 pt1"""
+                    ss = single(v_p_x_tsgndp)
+                    for clause in ss:
+                        clauses.append(clause)
+                    """end 20 pt1"""
+                """begin 34"""
+                clauses.append(v_d_x_tsgnd)
+                """end 34"""
+                ss = single(v_d_x_tsgnd)
+                """begin 20 pt2"""
+                for clause in ss:
+                    clauses.append(clause)
+                """end 20 pt2"""
 for t in teachers.keys():
     tsgn = lessons_teacher(t)
     for d in range(1, 7):
@@ -375,11 +424,6 @@ for g in groups.keys():
                     """begin 5"""
                     clauses.append([-tsgndp_calc(t, s, g, n, d, p), x_gpd])
                     """end 5"""
-            """begin 21"""
-            s = single(v_tsgn_x_tsgndp)
-            for clause in s:
-                clauses.append(clause)
-            """end 21"""
             """begin 6"""
             clauses.append([-x_gpd, *v_tsgn_x_tsgndp])
             """end 6"""
@@ -471,10 +515,34 @@ for t in teachers:
             clauses.append([-i_tdp, *v_k_i_k_tdp])
             """end 17"""
 
+for d in days:
+    for p in periods:
+        v_tsgn_x_tsgndp = []
+        for t in teachers.keys():
+            tsgn = lessons_teacher(t)
+            for s in tsgn.keys():
+                for g in tsgn[s].keys():
+                    for n in range(1, tsgn[s][g] + 1):
+                        v_tsgn_x_tsgndp.append(tsgndp_calc(t, s, g, n, d, p))
+        """begin 21"""
+        s = single(v_tsgn_x_tsgndp)
+        for clause in s:
+            clauses.append(clause)
+        """end 21"""
+
 cnf = CNF()
-print(clauses)
+# print(clauses)
 cnf.from_clauses(clauses)
 print(len(clauses))
 solver.append_formula(cnf)
 print(solver.solve())
+model = solver.get_model()
+# print(map_tsgndpr)
+# print(model)
+# print(clauses)
+keys = map_tsgndpr.keys()
+for i in model:
+    if i > 0 and i in keys:
+        print(i, map_tsgndpr[i])
+        # print(map_tsgndpr[i])
 # print(solver.get_model())
