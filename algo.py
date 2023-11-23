@@ -1,8 +1,22 @@
 import hashlib
+import json
+from itertools import combinations
 from typing import List
 
 import pysat.solvers
 from pysat.formula import CNF
+
+
+def list_to_dict(sample_list):
+    return {i + 1: sample_list[i] for i in range(len(sample_list))}
+
+
+# def start():
+#     with open('config_example.json', 'r') as file:
+#         data = json.load(file)
+#         groups = list_to_dict(data["groups"])
+#         rooms = data["rooms"]
+
 
 solver = pysat.solvers.Glucose3()
 
@@ -17,8 +31,13 @@ subjects = {
     1: "math_lec", 2: "math_prac", 3: "algebra_lec", 4: "algebra_prac",
     5: "algebra_lab"
 }
-counts = {1: 1, 2: 3, 3: 1, 4: 2, 5: 3}
-rooms = {1: 2222, 2: 2122}
+# counts = {1: 1, 2: 3, 3: 1, 4: 2, 5: 3}
+# id комнат и их тип
+rooms = {1: 2222, 2: 2122, 3: 1234, 4: 1122, 5: 1143}
+room_types = {'lec': [1, 2, 3], 'lab': [4], 'prac': [5]}
+
+
+# start()
 
 
 def lessons_group(group):
@@ -32,7 +51,7 @@ def lessons_group(group):
 def lessons_teacher(teacher: int):
     # teacher - subject - group - ntimes a week
     dict_teachers: dict = {
-        2: {1: {1: 1}, 3: {1: 1}, 4: {1: 2}},
+        2: {1: {1: 1}, 3: {1: 1}, 4: {1: 2}, 2: {1: 3}},
         1: {2: {1: 3}, 5: {1: 3}}
     }
     return dict_teachers[teacher]
@@ -114,6 +133,12 @@ def single(variables: List):
     return l
 
 
+def cardinality(variables, k):
+    import pysat.card
+    result = pysat.card.CardEnc.atmost(lits=variables, bound=k, encoding=1)
+    return result
+
+
 clauses = []
 """
 пара не может идти > 1 периода
@@ -146,7 +171,7 @@ clauses = []
 
 10. x_tp ⇒ V_d x_tdp - если у учителя данный период занят, то в один из дней этот период занят
 
-?? 11. i^k_tdp ⇔ (x_td(p−1) ∧ ^j¬x_td(p+j) ∧ x_td(p+k)) - учитель имеет период бездействия длины k в день d
+11. i^k_tdp ⇔ (x_td(p−1) ∧ ^j¬x_td(p+j) ∧ x_td(p+k)) - учитель имеет период бездействия длины k в день d
  начиная с пары p. То есть пара p-1 есть и пара p+k есть, а между ними у него idle. 
 
 12. i^k_tdp ⇒ i^k_td - если учитель имеет idle время начиная с p пары, значит он точно имеет 
@@ -168,23 +193,6 @@ clauses = []
 18. single({v1,_,vk}) = ^ (¬v_i V ¬v_j) | (1 <= i <= j <= k) - Только одна переменная из {} может быть истина.
 
 todo 19. cardinality({v1, ..., v_k}) <= m - максимум m переменных могут быть истины.
-
-20. single({x_tsgnd | d in days}) и for each d in days single({x'_tsgndp | p in periods(d)})
- - каждый предмет шедулится ровно один раз в расписании ??? непон
- 
-todo 21. single({x_tsgndp | tsgn in lessons(g)}) for each g, d, p - каждая группа может находиться на одной паре одновременно
-
-todo 22. x_tsg1ndp <=> x_tsgjndp, 1 < j <= k - каждый учитель может вести один предмет в одно премя.
- Однако несколько групп могут вестись одновременно. ??? надо ли
-
-23. Forbidden and requested working hours. Forbidden hours and explicit
-working hours for teachers are directly encoded by negation of variables xtdp,
-xtd, and xtp. Forbidden hours for groups are encoded using the variables xgdp.
-These constraints are represented by single literal clauses.
-
-todo 24. Number of teaching days. The condition that a teacher t teaches for exactly
-n days in a week is encoded by
-cardinality(fxtd j d 2 daysg)  n ^ cardinality(f:xtd j d 2 daysg)  jdaysj􀀀n
 
 not finished 25. x_gdp ^ xgd(p+k-1) ) => l^kgd for all p such that min(periods(d)) <= p <= max(periods(d)) - k + 1, 
 and l^kgd => V min(periods(d)) <= p <= max(periods(d)) - k + 1 (x_gdp ^ x_gd(p+k-1))
@@ -213,10 +221,71 @@ todo 29. x'_tsgndp => (... last p .13
 
 todo 33. single{x_tdpr | r in rooms} for each d, p, r - всего одна комната может быть занята учителем в данное время. ??? странное условие, пока не делать.
 
-34. v_d x_tsgnd - каждый урок должен быть проведен
+Correctness conditions:
+    34. v_d x_tsgnd - Each lesson has to be scheduled. DONE
+    20. single({x_tsgnd | d in days}) 
+        for each d in days single({x'_tsgndp | p in periods(d)}) 
+        - Each lesson is scheduled exactly once in the timetable. DONE
+    21. single({x_tsgndp | tsgn in lessons(g)}) for each g, d, p - Each group can attend only one lesson at a time. DONE
+    22. x_tsg1ndp <=> x_tsgjndp, 1 < j <= k - Every teacher can teach only one lesson at a time. Still, in some cases it
+        is required that several groups (e.g., g1; : : : ; gk) are joined into a cluster of
+        groups and that they attend the lesson tsn together, in the same period of
+        time. DONE ?
 
-
+Comfort Requirements:
+    23. Forbidden and requested working hours. Forbidden hours and explicit
+    working hours for teachers are directly encoded by negation of variables xtdp,
+    xtd, and xtp. Forbidden hours for groups are encoded using the variables xgdp.
+    These constraints are represented by single literal clauses. DONE ?
+    34. Groups and teachers overlapping. The condition that two groups g1
+    and g2 are not allowed to attend lessons in the same time. DONE ? (проверить на большом датасете)
+    35. Number of teaching days. The condition that a teacher t teaches for exactly
+    n days in a week. DONE
+    # 36. Work day duration
+    37. Idle periods. DONE ?
+        
 Idle periods constrains, p.13"""
+
+"""begin 37"""
+
+
+def idle_of_length_k_is_not_allowed(t, k):
+    clauses.append([-iktdp(t=t, k=k)])
+
+
+def teacher_is_not_allowed_to_have_more_than_one_idle_period_per_day(t, d):
+    v_i_tdp = []
+    for p in range(periods.start, periods.stop - 1):
+        v_i_tdp.append(iktdp(t=t, d=d, p=p))
+    ss = single(v_i_tdp)
+    for clause in ss:
+        clauses.append(clause)
+
+
+def teacher_is_allowed_to_have_at_most_n_idle_periods_per_week(t, n):
+    v_i_tdp = []
+    for d in days:
+        for p in periods:
+            v_i_tdp.append(iktdp(t=t, d=d, p=p))
+    card = cardinality(v_i_tdp, n)
+    for clause in card:
+        clauses.append(clause)
+
+
+"""end 37"""
+
+"""begin 34"""
+
+
+def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
+    for d in days:
+        for p in periods:
+            x_t1g1dp = tsgndpr(t=t_1, g=g_1, d=d, p=p)
+            x_t2g2dp = tsgndpr(t=t_2, g=g_2, d=d, p=p)
+            clauses.extend([[-x_t1g1dp, -x_t2g2dp], [-x_t2g2dp, -x_t1g1dp]])
+
+
+"""end 34"""
 
 """begin 33"""
 for d in days:
@@ -303,6 +372,8 @@ def minimal_group_work_day(g, d, k):
 for t in teachers:
     tsgn = lessons_teacher(t)
     for s in tsgn:
+        flag = False
+        single_x_tsgndp = []
         for g in tsgn[s]:
             # n = tsgn[s][g]
             for n in range(1, tsgn[s][g] + 1):
@@ -314,6 +385,8 @@ for t in teachers:
                         x_tsgndp = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p)
                         x_tdp = tsgndpr(t=t, d=d, p=p)
                         x_td = tsgndpr(t=t, d=d)
+                        if not flag:
+                            single_x_tsgndp.append(x_tsgndp)
                         v_p_x_tsgndp.append(x_tsgndp)
                         """begin 1"""
                         clauses.append(
@@ -330,6 +403,12 @@ for t in teachers:
                             clauses.append([-x_tsgndpr, x_tsgndp])
                         clauses.append([-x_tsgndp, *v_r_x_tsgndpr])
                         """end 31 pt1"""
+                        """begin 22 pt1"""
+                        for g_j in tsgn[s]:
+                            if g == g_j: continue
+                            x_tsgjndp = tsgndpr(t=t, s=s, g=g_j, n=n, d=d, p=p)
+                            clauses.extend([[-x_tsgndp, x_tsgjndp], [x_tsgndp, -x_tsgjndp]])
+                        """end 22 pt1"""
                     """begin 2"""
                     # print(v_p_x_tsgndp, list(map(lambda ppp: map_tsgndpr[ppp], v_p_x_tsgndp)))
                     clauses.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d),
@@ -349,6 +428,13 @@ for t in teachers:
                 for clause in ss:
                     clauses.append(clause)
                 """end 20 pt2"""
+                """begin 22 pt2"""
+                flag = True
+                ss = single(single_x_tsgndp)
+                for clause in ss:
+                    clauses.append(clause)
+                """end 22 pt2"""
+
 for t in teachers:
     tsgn = lessons_teacher(t)
     for d in days:
@@ -385,7 +471,7 @@ for g in groups:
 for t in teachers:
     for d in days:
         v_p_x_tdp = []
-        x_td = tsgndpr(t, d)
+        x_td = tsgndpr(t=t, d=d)
         for p in periods:
             x_tdp = tsgndpr(t=t, d=d, p=p)
             """begin 7"""
@@ -484,6 +570,26 @@ for d in days:
         for clause in s:
             clauses.append(clause)
         """end 21"""
+
+"""begin 35"""
+
+
+def number_of_teaching_days(t, n):
+    cl_1 = []
+    cl_2 = []
+    for d in days:
+        x_td = tsgndpr(t=t, d=d)
+        cl_1.append(x_td)
+        cl_2.append(-x_td)
+    print(cl_1)
+    cls = cardinality(cl_1, n)
+    cls.extend(cardinality(cl_2, len(days) - n))
+    print(cls.clauses)
+    for clause in cls.clauses:
+        clauses.append(clause)
+
+
+"""end 35"""
 
 cnf = CNF()
 # print(clauses)

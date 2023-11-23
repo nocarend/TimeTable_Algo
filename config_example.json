@@ -1,0 +1,155 @@
+{
+  "groups": [
+    21213,
+    21214,
+    21215,
+    21216
+  ],
+  "rooms": {
+    "lec": [
+      2128,
+      402,
+      1274,
+      304
+    ],
+    "lab": [
+      3212,
+      2221,
+      4218
+    ],
+    "prac": [
+      2253
+    ]
+  },
+  "plan": {
+    "permyakov": [
+      {
+        "subject": "cybersecurity",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "nedelko": [
+      {
+        "subject": "machine learning methods",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "vaskevich": [
+      {
+        "subject": "computational math",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "patrushev": [
+      {
+        "subject": "data processing and storage",
+        "subject_type": "lab",
+        "groups": [
+          21215
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "bukshev": [
+      {
+        "subject": "introduction to the mobile development",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "miginsky": [
+      {
+        "subject": "data processing and storage",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      },
+      {
+        "subject": "software engineering",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "kuzin": [
+      {
+        "subject": "software engineering",
+        "subject_type": "lab",
+        "groups": [
+          21215
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "vlasov": [
+      {
+        "subject": "team work",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "balabanov": [
+      {
+        "subject": "cybersecurity",
+        "subject_type": "lab",
+        "groups": [
+          21215
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "bogdanov": [
+      {
+        "subject": "computational math",
+        "subject_type": "prac",
+        "groups": [
+          21215
+        ],
+        "times_in_a_week": 1
+      }
+    ]
+  }
+}
