@@ -2,142 +2,26 @@ import hashlib
 import json
 from itertools import combinations
 from typing import List
-
 import pysat.solvers
 from pysat.formula import CNF
 
-
-def list_to_dict(sample_list):
-    return {i + 1: sample_list[i] for i in range(len(sample_list))}
-
-
-# def start():
-#     with open('config_example.json', 'r') as file:
-#         data = json.load(file)
-#         groups = list_to_dict(data["groups"])
-#         rooms = data["rooms"]
-
+from constraints import periods, days
+from implied_variables import iktdp, tsgndpr, lkgd, map_tsgndpr
+from utils import single, cardinality, read_input
 
 solver = pysat.solvers.Glucose3()
 
-period_length = 2  # 2 hours
-days = range(1, 7)
-periods = range(1, 8)
-duration = 1  #
-
-groups = {1: "21215"}
-teachers = {1: "volkov", 2: "pushkin"}
-subjects = {
-    1: "math_lec", 2: "math_prac", 3: "algebra_lec", 4: "algebra_prac",
-    5: "algebra_lab"
-}
-# counts = {1: 1, 2: 3, 3: 1, 4: 2, 5: 3}
-# id комнат и их тип
-rooms = {1: 2222, 2: 2122, 3: 1234, 4: 1122, 5: 1143}
-room_types = {'lec': [1, 2, 3], 'lab': [4], 'prac': [5]}
-
-
-# start()
-
-
-def lessons_group(group):
-    # group - [(lesson, teacher, ntimes in a week)]
-    dict_groups = {
-        1: [(1, 2, 1), (2, 1, 3), (3, 2, 1), (4, 2, 2), (5, 1, 3)]
-    }
-    return dict_groups[group]
-
-
-def lessons_teacher(teacher: int):
-    # teacher - subject - group - ntimes a week
-    dict_teachers: dict = {
-        2: {1: {1: 1}, 3: {1: 1}, 4: {1: 2}, 2: {1: 3}},
-        1: {2: {1: 3}, 5: {1: 3}}
-    }
-    return dict_teachers[teacher]
-
-
+groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms = read_input("config_example1.json")
+print("G", groups)
+print("T", teachers)
+print("Groups", group_lessons)
+print("Teachers", teacher_lessons)
+print("Rooms", rooms)
+print("Subjects", subjects)
 """
 uncomplete calculations formula
 жёстко влияет на производительность bound модуля
 """
-
-map_tsgndpr = {}
-
-
-def tsgndpr(t=0, s=0, g=0, n=0, d=0, p=0, r=0):
-    # 100 teachers, 100 subjects, 100 groups, 60 times in a week,
-    # 6 days in a week, 7 periods in a day, rooms
-    h = int(
-        hashlib.sha1(f"{t}_{s}_{g}_{n}_{d}_{p}_{r}".encode("utf-8")).hexdigest(),
-        16) % 1000000
-    """борьба с коллизиями и отображение хеша на переменную"""
-    i = 0
-    while h in map_tsgndpr.keys() and map_tsgndpr[h] != (t, s, g, n, d, p, r):
-        h = int(hashlib.sha1(
-            f"{t}_{s}_{g}_{n}_{d}_{p}_{r}_{i}".encode("utf-8")).hexdigest(),
-                16) % 1000000
-        i += 1
-    map_tsgndpr[h] = (t, s, g, n, d, p, r)
-    return h
-
-
-map_iktdp = {}
-
-
-def iktdp(k=0, t=0, d=0, p=0):
-    """A variable i^k_tdp is formed for each teacher t, day d, period p, and number k such
-that 1 ≤ k ≤ duration(d)−2 and min(periods(d))+1 ≤ p ≤ max(periods(d))− k. It represents
- the fact that the teacher t has idle period of length k in the day d, starting with the period p"""
-    h = int(
-        hashlib.sha512(f"{k}_{t}_{d}_{p}".encode("utf-8")).hexdigest(),
-        16) % 1000000
-    """борьба с коллизиями и отображение хеша на переменную"""
-    i = 0
-    while h in map_iktdp.keys() and map_iktdp[h] != (k, t, d, p):
-        h = int(
-            hashlib.sha512(f"{k}_{t}_{d}_{p}_{i}".encode("utf-8")).hexdigest(),
-            16) % 1000000
-        i += 1
-    map_iktdp[h] = (k, t, d, p)
-    return h
-
-
-map_lkgd = {}
-
-
-def lkgd(k=0, g=0, d=0):
-    """Duration of a working day for student groups is encoded using variables l^k_gd which are formed for each group
-    g, day d, and number k <= |periods(d)|. The variable l^k_gd represents the fact that teaching time for a group g
-    spans for at least k periods (including idle periods) in a day d."""
-    h = int(
-        hashlib.md5(f"{k}_{g}_{d}".encode("utf-8")).hexdigest(),
-        16) % 1000000
-    """борьба с коллизиями и отображение хеша на переменную"""
-    i = 0
-    while h in map_lkgd.keys() and map_lkgd[h] != (k, g, d):
-        h = int(
-            hashlib.md5(f"{k}_{g}_{d}_{i}".encode("utf-8")).hexdigest(),
-            16) % 1000000
-        i += 1
-    map_lkgd[h] = (k, g, d)
-    return h
-
-
-def single(variables: List):
-    l = []
-    k = len(variables)
-    for i in range(k):
-        for j in range(i + 1, k):
-            l.append([-variables[i], -variables[j]])
-    return l
-
-
-def cardinality(variables, k):
-    import pysat.card
-    result = pysat.card.CardEnc.atmost(lits=variables, bound=k, encoding=1)
-    return result
-
 
 clauses = []
 """
@@ -276,40 +160,29 @@ def teacher_is_allowed_to_have_at_most_n_idle_periods_per_week(t, n):
 
 """begin 34"""
 
-
-def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
-    for d in days:
-        for p in periods:
-            x_t1g1dp = tsgndpr(t=t_1, g=g_1, d=d, p=p)
-            x_t2g2dp = tsgndpr(t=t_2, g=g_2, d=d, p=p)
-            clauses.extend([[-x_t1g1dp, -x_t2g2dp], [-x_t2g2dp, -x_t1g1dp]])
-
-
 """end 34"""
-
+# exit()
 """begin 33"""
 for d in days:
     for p in periods:
-        for t in teachers.keys():
+        for t in teachers.values():
             v_r_x_tdpr = []
-            for r in rooms:
-                v_r_x_tdpr.append(tsgndpr(t=t, d=d, p=p, r=r))
-            s = single(v_r_x_tdpr)
-            for clause in s:
-                clauses.append(clause)
-
+            for r_t in rooms.values():
+                for r in r_t:
+                    v_r_x_tdpr.append(tsgndpr(t=t, d=d, p=p, r=r))
+            ss = single(v_r_x_tdpr)
+            clauses.extend(ss)
 """end 33"""
-
 """begin 32"""
 for d in days:
     for p in periods:
-        for r in rooms:
-            v_t_x_tdpr = []
-            for t in teachers.keys():
-                v_t_x_tdpr.append(tsgndpr(t=t, d=d, p=p, r=r))
-            s = single(v_t_x_tdpr)
-            for clause in s:
-                clauses.append(clause)
+        for r_t in rooms.values():
+            for r in r_t:
+                v_t_x_tdpr = []
+                for t in teachers.values():
+                    v_t_x_tdpr.append(tsgndpr(t=t, d=d, p=p, r=r))
+                ss = single(v_t_x_tdpr)
+                clauses.extend(ss)
 
 """end 32"""
 
@@ -319,7 +192,8 @@ for d in days:
 def consecutive_days(t, s, g, n):
     """"n - ый раз проводится в неделе (как я понял)"""
     for d in range(days.start, days.stop - 1):
-        clauses.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d), -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
+        clauses.append(
+            [-tsgndpr(t=t, s=s, g=g, n=n, d=d), -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
 
 
 """end 30"""
@@ -345,15 +219,6 @@ def group_work_day_limited(g, d, n):
 
 """begin 23"""
 
-
-def forbidden_hour_for_teacher(t, d, p):
-    clauses.extend([[-tsgndpr(t=t, d=d, p=p)], [-tsgndpr(t=t, d=d)], [-tsgndpr(t=t, p=p)]])
-
-
-def forbidden_hour_for_group(g, d, p):
-    clauses.append([-tsgndpr(g=g, d=d, p=p)])
-
-
 """end 23"""
 
 """begin 25"""
@@ -363,103 +228,127 @@ def minimal_group_work_day(g, d, k):
     """idle periods are included
     k!=1"""
     for p in range(periods.start, periods.stop - k + 1):
-        clauses.append([-tsgndpr(g=g, d=d, p=p), -tsgndpr(g=g, d=d, p=p + k - 1), lkgd(k=k, g=g, d=d)])
+        clauses.append(
+            [-tsgndpr(g=g, d=d, p=p), -tsgndpr(g=g, d=d, p=p + k - 1),
+             lkgd(k=k, g=g, d=d)])
     """page 13 second cond how???"""
 
 
 """end 25"""
-
-for t in teachers:
-    tsgn = lessons_teacher(t)
-    for s in tsgn:
-        flag = False
-        single_x_tsgndp = []
-        for g in tsgn[s]:
-            # n = tsgn[s][g]
-            for n in range(1, tsgn[s][g] + 1):
-                v_d_x_tsgnd = []
-                for d in days:
-                    v_d_x_tsgnd.append(tsgndpr(t=t, s=s, g=g, n=n, d=d))
-                    v_p_x_tsgndp = []
-                    for p in periods:
-                        x_tsgndp = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p)
-                        x_tdp = tsgndpr(t=t, d=d, p=p)
-                        x_td = tsgndpr(t=t, d=d)
-                        if not flag:
-                            single_x_tsgndp.append(x_tsgndp)
-                        v_p_x_tsgndp.append(x_tsgndp)
-                        """begin 1"""
-                        clauses.append(
-                            [-x_tsgndp, tsgndpr(t=t, s=s, g=g, n=n, d=d)])
-                        """end 1"""
-                        """begin 3"""
-                        clauses.append([-x_tsgndp, x_tdp])
-                        """end 3"""
-                        """begin 31 pt1"""
-                        v_r_x_tsgndpr = []
-                        for r in rooms:
-                            x_tsgndpr = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p, r=r)
-                            v_r_x_tsgndpr.append(x_tsgndpr)
-                            clauses.append([-x_tsgndpr, x_tsgndp])
-                        clauses.append([-x_tsgndp, *v_r_x_tsgndpr])
-                        """end 31 pt1"""
-                        """begin 22 pt1"""
-                        for g_j in tsgn[s]:
-                            if g == g_j: continue
-                            x_tsgjndp = tsgndpr(t=t, s=s, g=g_j, n=n, d=d, p=p)
-                            clauses.extend([[-x_tsgndp, x_tsgjndp], [x_tsgndp, -x_tsgjndp]])
-                        """end 22 pt1"""
-                    """begin 2"""
-                    # print(v_p_x_tsgndp, list(map(lambda ppp: map_tsgndpr[ppp], v_p_x_tsgndp)))
-                    clauses.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d),
-                                    *v_p_x_tsgndp])
-                    """end 2"""
-                    """begin 20 pt1"""
-                    ss = single(v_p_x_tsgndp)
+"""!!!!"""
+for t, subjs in teacher_lessons.items():
+    for sub_type, sub_arr in subjs.items():
+        for sgn in sub_arr:
+            s = sgn[0]
+            for g in sgn[1]:
+                for n in range(1, sgn[2] + 1):
+                    v_d_x_tsgnd = []
+                    for d in days:
+                        v_d_x_tsgnd.append(tsgndpr(t=t, s=s, g=g, n=n, d=d))
+                        v_p_x_tsgndp = []
+                        for p in periods:
+                            x_tsgndp = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p)
+                            x_tdp = tsgndpr(t=t, d=d, p=p)
+                            x_td = tsgndpr(t=t, d=d)
+                            v_p_x_tsgndp.append(x_tsgndp)
+                            """begin 1"""
+                            clauses.append(
+                                [-x_tsgndp, tsgndpr(t=t, s=s, g=g, n=n, d=d)])
+                            """end 1"""
+                            """begin 3"""
+                            clauses.append([-x_tsgndp, x_tdp])
+                            """end 3"""
+                            """begin 31 pt1"""
+                            v_r_x_tsgndpr = []
+                            for k_r, r_t in rooms.items():
+                                for r in r_t:
+                                    x_tsgndpr = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p, r=r)
+                                    if sub_type == k_r:
+                                        v_r_x_tsgndpr.append(x_tsgndpr)
+                                    clauses.append([-x_tsgndpr, x_tsgndp])
+                            clauses.append([-x_tsgndp, *v_r_x_tsgndpr])
+                            """end 31 pt1"""
+                        """begin 2"""
+                        clauses.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d),
+                                        *v_p_x_tsgndp])
+                        """end 2"""
+                        """begin 20 pt1"""
+                        ss = single(v_p_x_tsgndp)
+                        for clause in ss:
+                            clauses.append(clause)
+                        """end 20 pt1"""
+                    """begin 34"""
+                    clauses.append(v_d_x_tsgnd)
+                    """end 34"""
+                    ss = single(v_d_x_tsgnd)
+                    """begin 20 pt2"""
                     for clause in ss:
                         clauses.append(clause)
-                    """end 20 pt1"""
-                """begin 34"""
-                clauses.append(v_d_x_tsgnd)
-                # print(v_d_x_tsgnd, list(map(lambda ppp: map_tsgndpr[ppp], v_d_x_tsgnd)))
-                """end 34"""
-                ss = single(v_d_x_tsgnd)
-                """begin 20 pt2"""
-                for clause in ss:
-                    clauses.append(clause)
-                """end 20 pt2"""
-                """begin 22 pt2"""
-                flag = True
+                    """end 20 pt2"""
+
+for t, subjs in teacher_lessons.items():
+    for d in days:
+        for p in periods:
+            for k_r, r_t in rooms.items():
+                for r in r_t:
+                    x_tdpr = tsgndpr(t=t, d=d, p=p, r=r)
+                    v = []
+                    for sub_type, sub_arr in subjs.items():
+                        for sgn in sub_arr:
+                            s = sgn[0]
+                            for g in sgn[1]:
+                                for n in range(1, sgn[2] + 1):
+                                    x_tsgndpr = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p, r=r)
+                                    v.append(x_tsgndpr)
+                                    clauses.append([-x_tsgndpr, x_tdpr])
+                    clauses.append([-x_tdpr, *v])
+
+for t, subjs in teacher_lessons.items():
+    for sub_arr in subjs.values():
+        for sgn in sub_arr:
+            s = sgn[0]
+            if len(sgn[1]) > 1:
+                g_1 = sgn[1][0]
+                single_x_tsgndp = []
+                for g_j in sgn[1]:
+                    for n in range(1, sgn[2] + 1):
+                        for d in days:
+                            for p in periods:
+                                x_tsgndp = tsgndpr(t=t, s=s, g=g_1, n=n, d=d, p=p)
+                                if g_1 == g_j:
+                                    single_x_tsgndp.append(x_tsgndp)
+                                    continue
+                                x_tsgjndp = tsgndpr(t=t, s=s, g=g_j, n=n, d=d, p=p)
+                                clauses.extend([[-x_tsgndp, x_tsgjndp], [x_tsgndp, -x_tsgjndp]])
                 ss = single(single_x_tsgndp)
                 for clause in ss:
                     clauses.append(clause)
-                """end 22 pt2"""
 
-for t in teachers:
-    tsgn = lessons_teacher(t)
+"""!!!!"""
+for t, subjs in teacher_lessons.items():
     for d in days:
         for p in periods:
             v_tsgn_x_tsgndp = []
-            for s in tsgn.keys():
-                for g in tsgn[s]:
-                    for n in range(1, tsgn[s][g] + 1):
-                        # n = tsgn[s][g]
-                        v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
+            for sub_arr in subjs.values():
+                for sgn in sub_arr:
+                    s = sgn[0]
+                    for g in sgn[1]:
+                        for n in range(1, sgn[2] + 1):
+                            v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
             """begin 4"""
             clauses.append([-tsgndpr(t=t, d=d, p=p), *v_tsgn_x_tsgndp])
             """end 4"""
 
-for g in groups:
-    tsgn = lessons_group(g)
+"""!!!"""
+for g, subjs in group_lessons.items():
     for d in days:
         for p in periods:
             x_gpd = tsgndpr(g=g, d=d, p=p)
             v_tsgn_x_tsgndp = []
-            for stn in tsgn:
+            for stn in subjs:
                 s = stn[0]
                 t = stn[1]
                 for n in range(1, stn[2] + 1):
-                    # n = stn[2]
                     v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
                     """begin 5"""
                     clauses.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p), x_gpd])
@@ -468,7 +357,7 @@ for g in groups:
             clauses.append([-x_gpd, *v_tsgn_x_tsgndp])
             """end 6"""
 
-for t in teachers:
+for t in teachers.values():
     for d in days:
         v_p_x_tdp = []
         x_td = tsgndpr(t=t, d=d)
@@ -480,17 +369,18 @@ for t in teachers:
             v_p_x_tdp.append(x_tdp)
             v_r_tdpr = []
             """begin 31 pt2"""
-            for r in rooms:
-                x_tdpr = tsgndpr(t=t, d=d, p=p, r=r)
-                v_r_tdpr.append(x_tdpr)
-                clauses.append([-x_tdpr, x_tdp])
+            for r_t in rooms.values():
+                for r in r_t:
+                    x_tdpr = tsgndpr(t=t, d=d, p=p, r=r)
+                    v_r_tdpr.append(x_tdpr)
+                    clauses.append([-x_tdpr, x_tdp])
             clauses.append([-x_tdp, *v_r_tdpr])
             """end 31 pt2"""
         """begin 8"""
         clauses.append([-x_td, *v_p_x_tdp])
         """end 8"""
 
-for t in teachers:
+for t in teachers.values():
     for p in periods:
         v_d_x_tdp = []
         x_tp = tsgndpr(t=t, p=p)
@@ -505,7 +395,7 @@ for t in teachers:
         """end 10"""
 
 for k in range(periods.start, periods.stop - 2):
-    for t in teachers.keys():
+    for t in teachers.values():
         i_k_t = iktdp(k=k, t=t)
         v_d_i_k_td = []
         for d in days:
@@ -540,14 +430,14 @@ for k in range(periods.start, periods.stop - 2):
         clauses.append([-i_k_t, *v_d_i_k_td])
         """end 15"""
 
-for t in teachers:
+for t in teachers.values():
     for d in days:
         for p in range(periods.start + 1, periods.stop - 1):
             i_tdp = iktdp(t=t, d=d, p=p)
             v_k_i_k_tdp = []
             for k in range(periods.start, periods.stop - p):
                 i_k_tdp = iktdp(k=k, t=t, d=d, p=p)
-                v_k_i_k_tdp.append(i_k_tdp)  # багуля
+                v_k_i_k_tdp.append(i_k_tdp)
                 """begin 16"""
                 clauses.append([-i_k_tdp, i_tdp])
                 """end 16"""
@@ -555,41 +445,18 @@ for t in teachers:
             clauses.append([-i_tdp, *v_k_i_k_tdp])
             """end 17"""
 
-for d in days:
-    for p in periods:
-        v_tsgn_x_tsgndp = []
-        for t in teachers:
-            tsgn = lessons_teacher(t)
-            for s in tsgn:
-                for g in tsgn[s]:
-                    for n in range(1, tsgn[s][g] + 1):
-                        # n = tsgn[s][g]
-                        v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
-        """begin 21"""
-        s = single(v_tsgn_x_tsgndp)
-        for clause in s:
-            clauses.append(clause)
-        """end 21"""
-
-"""begin 35"""
-
-
-def number_of_teaching_days(t, n):
-    cl_1 = []
-    cl_2 = []
+for g, subjs in group_lessons.items():
     for d in days:
-        x_td = tsgndpr(t=t, d=d)
-        cl_1.append(x_td)
-        cl_2.append(-x_td)
-    print(cl_1)
-    cls = cardinality(cl_1, n)
-    cls.extend(cardinality(cl_2, len(days) - n))
-    print(cls.clauses)
-    for clause in cls.clauses:
-        clauses.append(clause)
-
-
-"""end 35"""
+        for p in periods:
+            v_tsgn_x_tsgndp = []
+            for stn in subjs:
+                s = stn[0]
+                t = stn[1]
+                for n in range(1, stn[2] + 1):
+                    v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
+            ss = single(v_tsgn_x_tsgndp)
+            for clause in ss:
+                clauses.append(clause)
 
 cnf = CNF()
 # print(clauses)
@@ -602,24 +469,37 @@ model = solver.get_model()
 # print(model)
 # print(clauses)
 res = []
-keys = map_tsgndpr.keys()
 for i in model:
-    if i > 0 and i in keys:
+    if i > 0 and i in map_tsgndpr:
         var = map_tsgndpr[i]
-        if ((t := var[0]) in teachers.keys()) and ((l := var[1]) in (les := lessons_teacher(t)).keys()) and (
-                (gr := var[2]) in (grps := les[l]).keys()) and ((times := var[3]) <= grps[gr]) and var[-3] != 0 and var[
-            -2] != 0 and var[-1] != 0:
+        if (((t := var[0]) in teachers.values()) and ((l := var[1]) in (les := subjects).values()) and (
+                (gr := var[2]) in (grps := groups).values())
+                # and ((times := var[3]) <= group_lessons[gr])
+                and var[-3] != 0 and var[
+                    -2] != 0 and var[-1] != 0):
             # print(var, t, les, grps)
-            res.append([teachers[t], subjects[l], groups[gr], var[-3], var[-2], rooms[var[-1]]])
+            r = []
+            for tt in teachers:
+                if teachers[tt] == t:
+                    r.append(tt)
+                    break
+            for ll in subjects:
+                if subjects[ll] == l:
+                    r.append(ll)
+                    break
+            for grgr in groups:
+                if groups[grgr] == gr:
+                    r.append(grgr)
+                    break
+            r.extend([var[-3], var[-2]])
+            for rr in original_rooms:
+                if original_rooms[rr] == var[-1]:
+                    r.append(rr)
+                    break
+            res.append(r)
 res.sort()
 for i in res:
     print(*i)
-# def lessons_teacher(teacher: int):
-#     # teacher - subject - group - ntimes a week
-#     dict_teachers: dict = {
-#         2: {1: {1: 1}, 3: {1: 1}, 4: {1: 2}},
-#         1: {2: {1: 3}, 5: {1: 3}}
-#     }
-#     return dict_teachers[teacher]
-# print(map_tsgndpr[i])
-# print(solver.get_model())
+# 24565
+
+# print(solver.get_core())
