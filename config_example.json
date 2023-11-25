@@ -288,6 +288,19 @@
         ],
         "times_in_a_week": 1
       }
+    ],
+    "phisruk": [
+      {
+        "subject": "physical_culture",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21214,
+          21215,
+          21216
+        ],
+        "times_in_a_week": 2
+      }
     ]
   },
   "constraints": [
