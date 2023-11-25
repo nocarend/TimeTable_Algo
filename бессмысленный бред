@@ -1,0 +1,105 @@
+"""
+пара не может идти > 1 периода
+
+1. x_tsgndp ⇒ x_tsgnd - если в день d период p стоит пара, то точно в день d
+эта пара идёт
+
+2. x_tsgnd ⇒ V_p t_tsgndp - если в день d стоит пара, то точно существует период p
+при котором это выполняется
+
+3. x_tsgndp ⇒ x_tdp - если учитель t даёт ведёт предмет s группе g n раз в
+неделю в день d парой p, то точно учитель t в день d парой p занят
+
+4. x_tdp ⇒ V_tsgn x_tsgndp - если учитель t занят в день d парой p, то точно
+существуют предмет s и группа g, которые он ведёт в это время
+
+5. x_tsgndp ⇒ x_gdp - если учитель ведёт предмет в данное время, то группа
+точно в это время там присутствует
+
+6. x_gdp ⇒ V_tsgn x_tsgndp - если группа присутсвует в данное время, то точно в
+данное время ведётся каким-то учителем какой-то предмет
+
+7. x_tdp ⇒ x_td - если учитель ведёт пару в этот день, то он точно в этот день
+занят
+
+8. x_td ⇒ V_p x_tdp - если учитель занят в этот день, то он точно ведёт хотя бы
+одну пару
+
+9. x_tdp ⇒ x_tp - если учитель ведёт пару в данный период, то этот период у него точно занят
+
+10. x_tp ⇒ V_d x_tdp - если у учителя данный период занят, то в один из дней этот период занят
+
+11. i^k_tdp ⇔ (x_td(p−1) ∧ ^j¬x_td(p+j) ∧ x_td(p+k)) - учитель имеет период бездействия длины k в день d
+ начиная с пары p. То есть пара p-1 есть и пара p+k есть, а между ними у него idle.
+
+12. i^k_tdp ⇒ i^k_td - если учитель имеет idle время начиная с p пары, значит он точно имеет
+    в этот день idle время
+
+13. i^k_td ⇒ V_p i^k_tdp - если учитель имеет идле в этот день, значит точно существует пара,
+    с которой этот период идёт
+
+14. i^k_td ⇒ i^k_t - если учитель имеет идле период в данный день, то он когда-то имеет идле период
+
+15. i^k_t ⇒ V_d i^k_td - если учитель имеет идле период, то в один из дней он точно есть.
+
+16. i^k_tdp ⇒ i_tdp - если учитель имеет в это время идле период длиной k,
+    то он точно имеет идле период.
+
+17. i_tdp ⇒ V_k i^k_tdp - если учитель имеет идле период в это время,
+    то он имеет когда-то идле периож длиной k.
+
+18. single({v1,_,vk}) = ^ (¬v_i V ¬v_j) | (1 <= i <= j <= k) - Только одна переменная из {} может быть истина.
+
+todo 19. cardinality({v1, ..., v_k}) <= m - максимум m переменных могут быть истины.
+
+not finished 25. x_gdp ^ xgd(p+k-1) ) => l^kgd for all p such that min(periods(d)) <= p <= max(periods(d)) - k + 1,
+and l^kgd => V min(periods(d)) <= p <= max(periods(d)) - k + 1 (x_gdp ^ x_gd(p+k-1))
+
+26. The requirement that a work day duration for a group is limited to n periods,
+is encoded by single literal constraints not l_kgd, for each k > n.
+
+27. The requirement that a work day duration for a group is at least n periods is encoded by the constraint x_gd => l^n_gd.
+
+Work day duration for teachers is encoded in a similar way.
+
+todo 28. x_tsgnd => x'_tsgndp1 V ... V x'_tsgndp_n - The requirement that a lesson can begin only in period p1, p2,
+. . . , or pn
+
+todo 29. x'_tsgndp => (... last p .13
+
+30. x_tsgnd => not x_tsg(n+1)(d+1) for each day d except the last - если предметы не должны идти 2 дня подряд
+
+31. x_tsgndpr => x_tsgndp
+         x_tdpr => x_tdp
+         x_tsgndp => V_r x_tsgndpr
+         x_tdp => V_r x_tdpr
+
+32. single{x_tdpr | t in teachers} for each d, p, r. - всего один учитель может находиться в конкретном месте и
+времени.
+
+todo 33. single{x_tdpr | r in rooms} for each d, p, r - всего одна комната может быть занята учителем в данное время. ??? странное условие, пока не делать.
+
+Correctness conditions:
+    34. v_d x_tsgnd - Each lesson has to be scheduled. DONE
+    20. single({x_tsgnd | d in days})
+        for each d in days single({x'_tsgndp | p in periods(d)})
+        - Each lesson is scheduled exactly once in the timetable. DONE
+    21. single({x_tsgndp | tsgn in lessons(g)}) for each g, d, p - Each group can attend only one lesson at a time. DONE
+    22. x_tsg1ndp <=> x_tsgjndp, 1 < j <= k - Every teacher can teach only one lesson at a time. Still, in some cases it
+        is required that several groups (e.g., g1; : : : ; gk) are joined into a cluster of
+        groups and that they attend the lesson tsn together, in the same period of
+        time. DONE ?
+
+Comfort Requirements:
+    23. Forbidden and requested working hours. Forbidden hours and explicit
+    working hours for teachers are directly encoded by negation of variables xtdp,
+    xtd, and xtp. Forbidden hours for groups are encoded using the variables xgdp.
+    These constraints are represented by single literal clauses. DONE ?
+    34. Groups and teachers overlapping. The condition that two groups g1
+    and g2 are not allowed to attend lessons in the same time. DONE ? (проверить на большом датасете)
+    35. Number of teaching days. The condition that a teacher t teaches for exactly
+    n days in a week. DONE
+    # 36. Work day duration
+    37. Idle periods. DONE ?
+
+Idle periods constrains, p.13"""
