@@ -15,10 +15,19 @@
     "lab": [
       3212,
       2221,
-      4218
+      4218,
+      306
     ],
     "prac": [
-      2253
+      2253,
+      3218,
+      3120,
+      1311,
+      2266,
+      1156,
+      1155,
+      4220,
+      3317
     ]
   },
   "plan": {
@@ -37,20 +46,28 @@
     ],
     "nedelko": [
       {
-        "subject": "machine learning methods",
+        "subject": "machine_learning_methods",
         "subject_type": "lec",
         "groups": [
           21213,
           21214,
           21215,
           21216
+        ],
+        "times_in_a_week": 1
+      },
+      {
+        "subject": "machine_learning_methods",
+        "subject_type": "prac",
+        "groups": [
+          21213
         ],
         "times_in_a_week": 1
       }
     ],
     "vaskevich": [
       {
-        "subject": "computational math",
+        "subject": "computational_math",
         "subject_type": "lec",
         "groups": [
           21213,
@@ -59,11 +76,19 @@
           21216
         ],
         "times_in_a_week": 1
+      },
+      {
+        "subject": "computational_math",
+        "subject_type": "prac",
+        "groups": [
+          21213
+        ],
+        "times_in_a_week": 1
       }
     ],
     "patrushev": [
       {
-        "subject": "data processing and storage",
+        "subject": "data_processing_and_storage",
         "subject_type": "lab",
         "groups": [
           21215
@@ -73,7 +98,7 @@
     ],
     "bukshev": [
       {
-        "subject": "introduction to the mobile development",
+        "subject": "introduction_to_the_mobile_development",
         "subject_type": "lec",
         "groups": [
           21213,
@@ -86,7 +111,7 @@
     ],
     "miginsky": [
       {
-        "subject": "data processing and storage",
+        "subject": "data_processing_and_storage",
         "subject_type": "lec",
         "groups": [
           21213,
@@ -97,7 +122,7 @@
         "times_in_a_week": 1
       },
       {
-        "subject": "software engineering",
+        "subject": "software_engineering",
         "subject_type": "lec",
         "groups": [
           21213,
@@ -106,11 +131,19 @@
           21216
         ],
         "times_in_a_week": 1
+      },
+      {
+        "subject": "software_engineering",
+        "subject_type": "lab",
+        "groups": [
+          21213
+        ],
+        "times_in_a_week": 1
       }
     ],
     "kuzin": [
       {
-        "subject": "software engineering",
+        "subject": "software_engineering",
         "subject_type": "lab",
         "groups": [
           21215
@@ -120,13 +153,21 @@
     ],
     "vlasov": [
       {
-        "subject": "team work",
+        "subject": "team_work",
         "subject_type": "lec",
         "groups": [
           21213,
           21214,
           21215,
           21216
+        ],
+        "times_in_a_week": 1
+      },
+      {
+        "subject": "team_work",
+        "subject_type": "prac",
+        "groups": [
+          21213
         ],
         "times_in_a_week": 1
       }
@@ -136,20 +177,146 @@
         "subject": "cybersecurity",
         "subject_type": "lab",
         "groups": [
-          21215
+          21215,
+          21213,
+          21214,
+          21216
         ],
         "times_in_a_week": 1
       }
     ],
     "bogdanov": [
       {
-        "subject": "computational math",
+        "subject": "computational_math",
         "subject_type": "prac",
         "groups": [
           21215
         ],
         "times_in_a_week": 1
       }
+    ],
+    "terenteva": [
+      {
+        "subject": "english",
+        "subject_type": "prac",
+        "groups": [
+          21213,
+          21215
+        ],
+        "times_in_a_week": 2
+      }
+    ],
+    "sitnov": [
+      {
+        "subject": "ctf",
+        "subject_type": "lec",
+        "groups": [
+          21213,
+          21215,
+          21214,
+          21216
+        ],
+        "times_in_a_week": 2
+      }
+    ],
+    "zligostev": [
+      {
+        "subject": "data_processing_and_storage",
+        "subject_type": "lab",
+        "groups": [
+          21213
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "kutalev": [
+      {
+        "subject": "data_processing_and_storage",
+        "subject_type": "lab",
+        "groups": [
+          21214
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "shvab": [
+      {
+        "subject": "computational_math",
+        "subject_type": "prac",
+        "groups": [
+          21214
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "golosov": [
+      {
+        "subject": "software_engineering",
+        "subject_type": "lab",
+        "groups": [
+          21214
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "brek": [
+      {
+        "subject": "software_engineering",
+        "subject_type": "lab",
+        "groups": [
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "plusnin": [
+      {
+        "subject": "data_processing_and_storage",
+        "subject_type": "lab",
+        "groups": [
+          21216
+        ],
+        "times_in_a_week": 1
+      }
+    ],
+    "levikin": [
+      {
+        "subject": "computational_math",
+        "subject_type": "prac",
+        "groups": [
+          21216
+        ],
+        "times_in_a_week": 1
+      }
     ]
-  }
+  },
+  "constraints": [
+    {
+      "name": "groups_overlapping",
+      "args": [
+        21215,
+        21213
+      ]
+    },
+    {
+      "name": "teachers_overlapping",
+      "args": [
+        "permyakov",
+        "nedelko"
+      ]
+    },
+    {
+      "name": "number_of_teaching_days",
+      "args": [
+        {
+          "teacher_name": "kuzin",
+          "number": 1
+        },
+        {
+          "teacher_name": "bukshev",
+          "number": 5
+        }
+      ]
+    }
+  ]
 }
