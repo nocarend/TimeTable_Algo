@@ -290,17 +290,31 @@
   ],
   "constraints": [
     {
-      "name": "groups_overlapping",
+      "name": "teachers_overlapping",
       "args": [
-        21215,
-        21213
+        "permyakov",
+        "nedelko"
       ]
     },
     {
       "name": "teachers_overlapping",
       "args": [
-        "permyakov",
-        "nedelko"
+        "balabanov",
+        "terenteva"
+      ]
+    },
+    {
+      "name": "teachers_overlapping",
+      "args": [
+        "balabanov",
+        "sitnov"
+      ]
+    },
+    {
+      "name": "teachers_overlapping",
+      "args": [
+        "terenteva",
+        "vaskevich"
       ]
     },
     {
@@ -312,7 +326,19 @@
         },
         {
           "teacher_name": "bukshev",
-          "number": 5
+          "number": 1
+        },
+        {
+          "teacher_name": "terenteva",
+          "number": 1
+        },
+        {
+          "teacher_name": "vaskevich",
+          "number": 1
+        },
+        {
+          "teacher_name": "balabanov",
+          "number": 1
         }
       ]
     }
