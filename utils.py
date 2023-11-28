@@ -1,8 +1,6 @@
 import json
 from typing import List, Iterable
 
-from implied_variables import tsgndpr
-
 
 def single(variables: List):
     l = []
@@ -38,6 +36,31 @@ def read_input(filename):
     def read_plan(data):
         return data["plan"]
 
+    def read_constraints(data, groups, teachers):
+        cls = []
+
+        def switch_name(given_name, arguments):
+            print(given_name, arguments)
+            match given_name:
+                case 'groups_overlapping':
+                    assert len(arguments) == 2
+                    from constraints import Group
+                    cls.extend(Group.groups_overlapping(groups[arguments[0]], groups[arguments[1]]))
+                case 'teachers_overlapping':
+                    assert len(arguments) == 2
+                    from constraints import Teacher
+                    cls.extend(Teacher.teachers_overlapping(teachers[arguments[0]], teachers[arguments[1]]))
+                case 'number_of_teaching_days':
+                    assert len(arguments) > 0
+                    from constraints import Teacher
+                    for i in arguments:
+                        cls.extend(Teacher.number_of_teaching_days(teachers[i['teacher_name']], i['number']))
+
+        constraints_list = data["constraints"]
+        for d in constraints_list:
+            switch_name(d['name'], d['args'])
+        return cls
+
     def get_teachers_and_subjects_list(plan):
         teachers = set()
         for i in plan:
@@ -69,4 +92,5 @@ def read_input(filename):
         rooms, original_rooms = read_rooms(data)
         plan = read_plan(data)
         teachers, subjects, group_lessons, teacher_lessons = get_teachers_and_subjects_list(plan)
-    return groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms
+        clauses = read_constraints(data, groups, teachers)
+    return clauses, groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms
