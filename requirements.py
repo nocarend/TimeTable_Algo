@@ -147,9 +147,10 @@ class Mixed:
                 s = stn[0]
                 t = stn[1]
                 for n in range(1, stn[2] + 1):
-                    v_tsgn_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
+                    x_tsgndp = tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p)
+                    v_tsgn_x_tsgndp.append(x_tsgndp)
                     """begin 5"""
-                    res.append([-tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p), x_gpd])
+                    res.append([-x_tsgndp, x_gpd])
                     """end 5"""
             """begin 6"""
             res.append([-x_gpd, *v_tsgn_x_tsgndp])
