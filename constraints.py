@@ -4,17 +4,17 @@ from implied_variables import tsgndpr, iktdp, lkgd
 from utils import cardinality, single
 
 period_length = 2
-days = range(1, 7)
+days = range(1, 4)
 periods = range(1, 8)
 lesson_duration = 1
 
 
 class Teacher:
     @classmethod
-    def number_of_teaching_days(cls, rules, t, n):
+    def number_of_teaching_days(cls, t, n):
         c = []
         for d in days:
-            x_td = rules.tsgndpr(t=t, d=d)
+            x_td = tsgndpr(t=t, d=d)
             c.append(x_td)
         cl = cardinality(c, n)
         cl.extend(cardinality([-i for i in c], len(days) - n))
@@ -68,6 +68,10 @@ class Group:
         for k in range(n + 1, periods.stop):
             res.append([-lkgd(k=k, g=g, d=d)])
         return res
+
+    @classmethod
+    def groups_overlapping(cls, g_1, g_2):
+        return group_teacher_overlapping(g_1=g_1, g_2=g_2)
 
 
 # def minimal_group_work_day(g, d, k):
