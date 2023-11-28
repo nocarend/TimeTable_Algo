@@ -6,8 +6,10 @@ from utils import read_input
 
 
 class Algorithm:
+    clauses = []
+
     def __init__(self, filename):
-        (self.groups, self.teachers, self.group_lessons, self.teacher_lessons, self.rooms,
+        (self.clauses, self.groups, self.teachers, self.group_lessons, self.teacher_lessons, self.rooms,
          self.subjects, self.original_rooms) = read_input(filename)
 
     def calculate(self):
@@ -17,12 +19,12 @@ class Algorithm:
         mixed_requirements = Mixed(self.teachers, self.teacher_lessons, self.group_lessons, self.original_rooms,
                                    self.rooms)
         cnf = CNF()
-        clauses = room_requirements.room_all() + mixed_requirements.mixed_all()
-        cnf.from_clauses(clauses)
+        self.clauses.extend(room_requirements.room_all() + mixed_requirements.mixed_all())
+        cnf.from_clauses(self.clauses)
         solver = pysat.solvers.Glucose4()
         solver.append_formula(cnf)
         print(solver.solve())
-        print(len(clauses))
+        print(len(self.clauses))
         model = solver.get_model()
         self._print_input(model)
 
