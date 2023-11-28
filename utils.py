@@ -39,25 +39,28 @@ def read_input(filename):
         return data["plan"]
 
     def get_teachers_and_subjects_list(plan):
-        teachers = list_to_dict(list(plan.keys()))
+        teachers = set()
+        for i in plan:
+            teachers.add(i["teacher"])
+        teachers = list_to_dict(list(teachers))
         subjects = set()
         group_lessons = {g: [] for g in groups.values()}
         teacher_lessons = {}
-        for teacher, d in plan.items():
+        for d in plan:
+            teacher = d['teacher']
             teacher_lessons[teachers[teacher]] = {'lec': [], 'prac': [], 'lab': []}
-            for subj in d:
-                subjects.add(f"{subj['subject']}_{subj['subject_type']}")
+            subjects.add(f"{d['subject']}_{d['subject_type']}")
         subjects = list_to_dict(list(subjects))
-        for teacher, d in plan.items():
+        for d in plan:
+            teacher = d['teacher']
             teacher_id = teachers[teacher]
-            for subj in d:
-                type = subj["subject_type"]
-                gr = [groups[idd] for idd in subj["groups"]]
-                n_times = subj["times_in_a_week"]
-                full_name = subjects[f"{subj['subject']}_{type}"]
-                teacher_lessons[teacher_id][type].append((full_name, gr, n_times))
-                for g in gr:
-                    group_lessons[g].append((full_name, teacher_id, n_times))
+            type = d["subject_type"]
+            gr = [groups[idd] for idd in d["groups"]]
+            n_times = d["times_in_a_week"]
+            full_name = subjects[f"{d['subject']}_{type}"]
+            teacher_lessons[teacher_id][type].append((full_name, gr, n_times))
+            for g in gr:
+                group_lessons[g].append((full_name, teacher_id, n_times))
         return teachers, subjects, group_lessons, teacher_lessons
 
     with open(filename, 'r') as file:
