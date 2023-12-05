@@ -2,9 +2,11 @@
 
 Best (not finished yet) solution using SAT solver
 
-## Supported constrains
+## Supported constraints
 
 ### Forbidden and requested working hours.
+
+Teacher ``t`` cannot give lessons in a day ``d``, a period ``p``
 
 ### Groups and teachers overlapping.
 
@@ -18,7 +20,7 @@ The condition that a teacher ``t`` teaches for exactly ``n`` days in a week.
 ### Idle periods.
 
 1. The requirement that idle periods of length ``k`` are not allowed for the teacher ``t``.
-2. The requirement that a teacher t is not allowed to have more than one idle
-period per day.
-3. The requirement that a teacher t is allowed to have at most n idle periods per
-week.
+2. The requirement that a teacher ``t`` is not allowed to have more than one idle
+   period per day.
+3. The requirement that a teacher ``t`` is allowed to have at most ``n`` idle periods per
+   week.

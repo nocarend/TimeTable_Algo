@@ -2,7 +2,7 @@ import pysat.solvers
 from pysat.formula import CNF, WCNF
 
 from implied_variables import map_tsgndpr
-from utils import read_input
+from utils import Reader
 
 
 class Algorithm:
@@ -10,7 +10,7 @@ class Algorithm:
 
     def __init__(self, filename):
         (self.clauses, self.groups, self.teachers, self.group_lessons, self.teacher_lessons, self.rooms,
-         self.subjects, self.original_rooms) = read_input(filename)
+         self.subjects, self.original_rooms) = Reader.read_input(filename)
 
     def calculate(self):
         from requirements import Correctness
@@ -19,6 +19,11 @@ class Algorithm:
         mixed_requirements = Mixed(self.teachers, self.teacher_lessons, self.group_lessons, self.original_rooms,
                                    self.rooms)
         cnf = CNF()
+        assumptions = []
+        clauses_copy = self.clauses.copy()
+        for i in clauses_copy:
+            for j in i:
+                assumptions.append(abs(j))
         self.clauses.extend(room_requirements.room_all() + mixed_requirements.mixed_all())
         cnf.from_clauses(self.clauses)
         solver = pysat.solvers.Glucose4()
@@ -61,11 +66,17 @@ class Algorithm:
         _simple_print(d)
 
     def _print_unsatisfiable(self):  # doesn't work
+        import sys
+        sys.stdout = open('algorithm_output.txt', 'w')
         from pysat.examples.musx import MUSX
-        wcnf = WCNF(self.clauses)
-        wcnf.extend(self.clauses)
+        wcnf = WCNF()
+        for i in self.clauses:
+            wcnf.append(i, weight=1)
+        # wcnf.extend(self.clauses)
         musx = MUSX(wcnf)
-        print(musx.compute())
+        r = musx.compute()
+        from constraints import checker
+        checker(set(r))
 
 
 if __name__ == '__main__':

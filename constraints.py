@@ -4,7 +4,7 @@ from implied_variables import tsgndpr, iktdp, lkgd
 from utils import cardinality, single
 
 period_length = 2
-days = range(1, 4)
+days = range(1, 7)
 periods = range(1, 8)
 lesson_duration = 1
 
@@ -21,8 +21,13 @@ class Teacher:
         return cl
 
     @classmethod
-    def forbidden_hour_for_teacher(cls, t, d, p):
-        return [[-tsgndpr(t=t, d=d, p=p)], [-tsgndpr(t=t, d=d)], [-tsgndpr(t=t, p=p)]]
+    def forbidden_period_for_teacher(cls, t, d, p):
+        # return [[-tsgndpr(t=t, d=d, p=p)], [-tsgndpr(t=t, d=d)], [-tsgndpr(t=t, p=p)]]
+        return [[-tsgndpr(t=t, d=d, p=p)]]
+
+    @classmethod
+    def forbidden_day_for_teacher(cls, t, d):
+        return [[-tsgndpr(t=t, d=d)]]
 
     @classmethod
     def idle_of_length_k_is_not_allowed(cls, t, k):
@@ -54,9 +59,6 @@ class Teacher:
 
 
 class Group:
-    @classmethod
-    def forbidden_hour_for_group(cls, g, d, p):
-        return [-tsgndpr(g=g, d=d, p=p)]
 
     @classmethod
     def group_work_day_minimum(cls, g, d, n):
@@ -70,8 +72,16 @@ class Group:
         return res
 
     @classmethod
-    def groups_overlapping(cls, g_1, g_2):
-        return group_teacher_overlapping(g_1=g_1, g_2=g_2)
+    def forbidden_period_for_group(cls, g, d, p):
+        return [[-tsgndpr(g=g, d=d, p=p)]]
+
+    @classmethod
+    def forbidden_day_for_group(cls, g, d):
+        return [[-tsgndpr(g=g, d=d, p=p)] for p in periods]  # because ef students are always available lol
+
+    @classmethod
+    def groups_overlapping(cls, g_1, g_2, status='add'):
+        return group_teacher_overlapping(g_1=g_1, g_2=g_2, status=status)
 
 
 # def minimal_group_work_day(g, d, k):
@@ -89,14 +99,32 @@ class Lesson:
         res = []
         for d in range(days.start, days.stop - 1):
             res.append(
-                [-tsgndpr(t=t, s=s, g=g, n=n, d=d), -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
+                [-tsgndpr(t=t, s=s, g=g, n=n, d=d),
+                 -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
         return res
 
 
-def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
+def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0, status='add'):
     cl = []
     for d, p in product(days, periods):
         x_t1g1dp = tsgndpr(t=t_1, g=g_1, d=d, p=p)
         x_t2g2dp = tsgndpr(t=t_2, g=g_2, d=d, p=p)
         cl.extend([[-x_t1g1dp, -x_t2g2dp], [-x_t2g2dp, -x_t1g1dp]])
     return cl
+
+
+def checker(mus):
+    from utils import Reader
+    from ast import literal_eval
+    clauses = Reader.clauses
+    for clause in clauses.keys():
+        flag = False
+        print(clause)
+        for i in literal_eval(clause):
+            for j in i:
+                if abs(j) in mus:
+                    print(clause)
+                    flag = True
+                    break
+            if flag:
+                break
