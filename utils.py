@@ -40,7 +40,7 @@ def read_input(filename):
         cls = []
 
         def switch_name(given_name, arguments):
-            print(given_name, arguments)
+            # print(given_name, arguments)
             match given_name:
                 case 'groups_overlapping':
                     assert len(arguments) == 2
