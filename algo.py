@@ -66,8 +66,6 @@ class Algorithm:
         _simple_print(d)
 
     def _print_unsatisfiable(self):  # doesn't work
-        import sys
-        sys.stdout = open('algorithm_output.txt', 'w')
         from pysat.examples.musx import MUSX
         wcnf = WCNF()
         for i in self.clauses:
