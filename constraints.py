@@ -12,12 +12,9 @@ lesson_duration = 1
 class Teacher:
     @classmethod
     def number_of_teaching_days(cls, t, n):
-        c = []
-        for d in days:
-            x_td = tsgndpr(t=t, d=d)
-            c.append(x_td)
+        c = [tsgndpr(t=t, d=d) for d in days]
         cl = cardinality(c, n)
-        cl.extend(cardinality([-i for i in c], len(days) - n))
+        # cl.extend(cardinality([-i for i in c], len(days) - n))
         return cl
 
     @classmethod
