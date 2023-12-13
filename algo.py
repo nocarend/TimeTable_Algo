@@ -1,7 +1,8 @@
 import pysat.solvers
 from pysat.formula import CNF, WCNF
 
-from implied_variables import map_tsgndpr
+from constraints import checker
+from implied_variables import map_tsgndpr, map_iktdp, map_lkgd
 from utils import Reader
 
 
@@ -10,9 +11,10 @@ class Algorithm:
 
     def __init__(self, filename):
         (self.clauses, self.groups, self.teachers, self.group_lessons, self.teacher_lessons, self.rooms,
-         self.subjects, self.original_rooms) = Reader.read_input(filename)
+         self.subjects, self.original_rooms, self.assumptions) = Reader.read_input(filename)
 
     def calculate(self):
+
         from requirements import Correctness
         room_requirements = Correctness(self.teachers, self.original_rooms, self.rooms, self.teacher_lessons)
         from requirements import Mixed
@@ -28,14 +30,14 @@ class Algorithm:
         cnf.from_clauses(self.clauses)
         solver = pysat.solvers.Glucose4()
         solver.append_formula(cnf)
-        # print(solver.solve())
-        # print(len(self.clauses))
-        if solver.solve():
+        if solver.solve(assumptions=self.assumptions):
             self._print_input(solver.get_model())
         else:
             self._print_unsatisfiable()
 
     def _print_input(self, model):
+        print('SUCCESSFULLY')
+
         def _simple_print(d):
             for i in sorted(d.items(), key=lambda x: (x[0][2], x[0][3])):
                 print(i)
@@ -65,16 +67,24 @@ class Algorithm:
         sys.stdout = open('algorithm_output.txt', 'w')
         _simple_print(d)
 
-    def _print_unsatisfiable(self):  # doesn't work
+    def _print_unsatisfiable(self):
+        print('FAILED')
+        s = ['Teacher', 'Subject', 'Group', 'Times in a week', 'Day', 'Period', 'Room']
         from pysat.examples.musx import MUSX
         wcnf = WCNF()
         for i in self.clauses:
             wcnf.append(i, weight=1)
-        # wcnf.extend(self.clauses)
-        musx = MUSX(wcnf)
+        musx = MUSX(wcnf, verbosity=0)
         r = musx.compute()
-        from constraints import checker
-        checker(set(r))
+        for i in r:
+            for j in [map_tsgndpr, map_iktdp, map_lkgd]:
+                if i in j.keys():
+                    v = j[i]
+                    print("Problem with ", end='')
+                    for k in range(len(v)):
+                        print(f'{s[k]}: {v[k]}', end=', ')
+                    print()
+        # checker(r, self.assumptions)
 
 
 if __name__ == '__main__':

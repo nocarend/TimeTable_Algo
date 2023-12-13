@@ -1,6 +1,8 @@
 import json
 from typing import List, Iterable
 
+from implied_variables import assumption_hash, MOD
+
 
 def single(variables: List):
     l = []
@@ -18,7 +20,8 @@ def cardinality(variables: Iterable, k: int):
 
 
 class Reader:
-    clauses = {}
+    clauses = []
+    assumptions = []
 
     @classmethod
     def read_input(cls, filename):
@@ -69,8 +72,12 @@ class Reader:
                     case 'forbidden_day_for_group':
                         from constraints import Group
                         cl = Group.forbidden_day_for_group(groups[arguments['group']], arguments['day'])
-                cls.clauses[str(cl)] = (given_name, arguments)
-                # print(given_name, arguments, cl)
+                assumption_h = assumption_hash(cl) % MOD
+                cls.assumptions.append(assumption_h)
+                cls.clauses.extend(cl)
+                # cls.clauses.extend(to_cnf.do(assumption_h, cl))
+                cls.clauses.append([assumption_h])
+
             constraints_list = data["constraints"]
             for d in constraints_list:
                 switch_name(d['name'], d['args'])
@@ -107,8 +114,4 @@ class Reader:
             plan = read_plan(data)
             teachers, subjects, group_lessons, teacher_lessons = get_teachers_and_subjects_list(plan)
             read_constraints(data, groups, teachers)
-        from ast import literal_eval
-        arr = []
-        for x in cls.clauses.keys():
-            arr.extend(literal_eval(x))
-        return arr, groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms
+        return cls.clauses, groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms, cls.assumptions

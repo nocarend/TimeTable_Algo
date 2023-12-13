@@ -164,8 +164,6 @@ class Mixed:
             x_td = tsgndpr(t=t, d=d)
             for p in periods:
                 x_tdp = tsgndpr(t=t, d=d, p=p)
-                """begin 7"""
-                """end 7"""
                 v_p_x_tdp.append(x_tdp)
                 v_r_tdpr = []
                 """begin 31 pt2"""

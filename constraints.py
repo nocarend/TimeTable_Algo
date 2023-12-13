@@ -101,7 +101,7 @@ class Lesson:
         return res
 
 
-def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0, status='add'):
+def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
     cl = []
     for d, p in product(days, periods):
         x_t1g1dp = tsgndpr(t=t_1, g=g_1, d=d, p=p)
@@ -110,18 +110,14 @@ def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0, status='add'):
     return cl
 
 
-def checker(mus):
+def checker(mus, assumptions):
     from utils import Reader
-    from ast import literal_eval
     clauses = Reader.clauses
-    for clause in clauses.keys():
-        flag = False
-        print(clause)
-        for i in literal_eval(clause):
-            for j in i:
-                if abs(j) in mus:
-                    print(clause)
-                    flag = True
-                    break
-            if flag:
+    for clause in clauses:
+        for i in clause:
+            if abs(i) in mus:
+                for j in clause:
+                    if abs(j) in assumptions:
+                        print(clause)
+                        break
                 break
