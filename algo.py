@@ -68,8 +68,13 @@ class Algorithm:
         _simple_print(d)
 
     def _print_unsatisfiable(self):
+        def get_swap_dict(d):
+            return {v: k for k, v in d.items()}
+
         print('FAILED')
         s = ['Teacher', 'Subject', 'Group', 'Times in a week', 'Day', 'Period', 'Room']
+        ss = [get_swap_dict(self.teachers), get_swap_dict(self.subjects), get_swap_dict(self.groups), range(0, 8),
+              range(0, 10), range(0, 100), get_swap_dict(self.original_rooms)]
         from pysat.examples.musx import MUSX
         wcnf = WCNF()
         for i in self.clauses:
@@ -82,7 +87,9 @@ class Algorithm:
                     v = j[i]
                     print("Problem with ", end='')
                     for k in range(len(v)):
-                        print(f'{s[k]}: {v[k]}', end=', ')
+                        # print(v[k])
+                        if v[k] > 0:
+                            print(f'{s[k]}: {ss[k][v[k]]}', end=', ')
                     print()
         # checker(r, self.assumptions)
 
