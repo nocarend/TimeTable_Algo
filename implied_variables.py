@@ -5,7 +5,7 @@ map_tsgndpr = {}
 map_iktdp = {}
 map_lkgd = {}
 
-MOD = 1000000
+MOD = 10000000
 
 
 def tsgndpr(t=0, s=0, g=0, n=0, d=0, p=0, r=0):
