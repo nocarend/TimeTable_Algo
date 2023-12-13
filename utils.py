@@ -73,10 +73,10 @@ class Reader:
                         from constraints import Group
                         cl = Group.forbidden_day_for_group(groups[arguments['group']], arguments['day'])
                 assumption_h = assumption_hash(cl) % MOD
-                cls.assumptions.append(assumption_h)
+                # cls.assumptions.append(assumption_h)
                 cls.clauses.extend(cl)
                 # cls.clauses.extend(to_cnf.do(assumption_h, cl))
-                cls.clauses.append([assumption_h])
+                # cls.clauses.append([assumption_h])
 
             constraints_list = data["constraints"]
             for d in constraints_list:

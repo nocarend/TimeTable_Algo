@@ -5,18 +5,18 @@ map_tsgndpr = {}
 map_iktdp = {}
 map_lkgd = {}
 
-MOD = 10000000
+MOD = 1000000
 
 
 def tsgndpr(t=0, s=0, g=0, n=0, d=0, p=0, r=0):
     # 100 teachers, 100 subjects, 100 groups, 60 times in a week,
     # 6 days in a week, 7 periods in a day, rooms
     h = int(
-        hashlib.shake_256(f"{t}_{s}_{g}_{n}_{d}_{p}_{r}".encode("utf-8")).hexdigest(20),
+        hashlib.sha1(f"{t}_{s}_{g}_{n}_{d}_{p}_{r}".encode("utf-8")).hexdigest(),
         16) % MOD + 1
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in map_tsgndpr and map_tsgndpr[h] != (t, s, g, n, d, p, r):
+    while (h in map_tsgndpr and map_tsgndpr[h] != (t, s, g, n, d, p, r)) or h in map_lkgd or h in map_iktdp:
         h = int(hashlib.sha1(
             f"{t}_{s}_{g}_{n}_{d}_{p}_{r}_{i}".encode("utf-8")).hexdigest(),
                 16) % MOD + 1
@@ -34,7 +34,7 @@ that 1 ≤ k ≤ duration(d)−2 and min(periods(d))+1 ≤ p ≤ max(periods(d))
         16) % MOD + 1
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in map_iktdp and map_iktdp[h] != (k, t, d, p):
+    while (h in map_iktdp and map_iktdp[h] != (k, t, d, p)) or h in map_tsgndpr or h in map_lkgd:
         h = int(
             hashlib.sha512(f"{k}_{t}_{d}_{p}_{i}".encode("utf-8")).hexdigest(),
             16) % MOD + 1
@@ -48,13 +48,13 @@ def lkgd(k=0, g=0, d=0):
     g, day d, and number k <= |periods(d)|. The variable l^k_gd represents the fact that teaching time for a group g
     spans for at least k periods (including idle periods) in a day d."""
     h = int(
-        hashlib.md5(f"{k}_{g}_{d}".encode("utf-8")).hexdigest(),
+        hashlib.shake_256(f"{k}_{g}_{d}".encode("utf-8")).hexdigest(20),
         16) % MOD + 1
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
-    while h in map_lkgd and map_lkgd[h] != (k, g, d):
+    while (h in map_lkgd and map_lkgd[h] != (k, g, d)) or h in map_tsgndpr or h in map_iktdp:
         h = int(
-            hashlib.md5(f"{k}_{g}_{d}_{i}".encode("utf-8")).hexdigest(),
+            hashlib.shake_256(f"{k}_{g}_{d}_{i}".encode("utf-8")).hexdigest(20),
             16) % MOD + 1
         i += 1
     map_lkgd[h] = (k, g, d)
