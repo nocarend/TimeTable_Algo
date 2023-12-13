@@ -82,15 +82,17 @@ class Algorithm:
         musx = MUSX(wcnf, verbosity=0)
         r = musx.compute()
         for i in r:
-            for j in [map_tsgndpr, map_iktdp, map_lkgd]:
-                if i in j.keys():
-                    v = j[i]
-                    print("Problem with ", end='')
-                    for k in range(len(v)):
-                        # print(v[k])
-                        if v[k] > 0:
-                            print(f'{s[k]}: {ss[k][v[k]]}', end=', ')
-                    print()
+            if i in map_tsgndpr.keys():
+                v = map_tsgndpr[i]
+                print("Problem with ", end='')
+                for k in range(len(v)):
+                    # print(v[k])
+                    if v[k] > 0:
+                        print(f'{s[k]}: {ss[k][v[k]]}', end='')
+                    if k == len(v) - 1:
+                        print()
+                    elif v[k] > 0:
+                        print(', ', end='')
         # checker(r, self.assumptions)
 
 
