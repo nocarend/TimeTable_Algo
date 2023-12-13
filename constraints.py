@@ -77,8 +77,8 @@ class Group:
         return [[-tsgndpr(g=g, d=d, p=p)] for p in periods]  # because ef students are always available lol
 
     @classmethod
-    def groups_overlapping(cls, g_1, g_2, status='add'):
-        return group_teacher_overlapping(g_1=g_1, g_2=g_2, status=status)
+    def groups_overlapping(cls, g_1, g_2):
+        return group_teacher_overlapping(g_1=g_1, g_2=g_2)
 
 
 # def minimal_group_work_day(g, d, k):
