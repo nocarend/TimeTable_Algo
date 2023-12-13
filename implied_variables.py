@@ -17,8 +17,8 @@ def tsgndpr(t=0, s=0, g=0, n=0, d=0, p=0, r=0):
     """борьба с коллизиями и отображение хеша на переменную"""
     i = 0
     while h in map_tsgndpr and map_tsgndpr[h] != (t, s, g, n, d, p, r):
-        h = int(hashlib.shake_256(
-            f"{t}_{s}_{g}_{n}_{d}_{p}_{r}_{i}".encode("utf-8")).hexdigest(20),
+        h = int(hashlib.sha1(
+            f"{t}_{s}_{g}_{n}_{d}_{p}_{r}_{i}".encode("utf-8")).hexdigest(),
                 16) % MOD + 1
         i += 1
     map_tsgndpr[h] = (t, s, g, n, d, p, r)
