@@ -1,7 +1,7 @@
 import json
 from typing import List, Iterable
 
-from implied_variables import assumption_hash, MOD
+from src.app.implied_variables import assumption_hash, MOD
 
 
 def single(variables: List):
@@ -49,28 +49,28 @@ class Reader:
                 cl = []
                 match given_name:
                     case 'groups_overlapping':
-                        from constraints import Group
+                        from src.app.constraints import Group
                         cl = Group.groups_overlapping(groups[arguments['group_1']], groups[arguments['group_2']])
                     case 'teachers_overlapping':
-                        from constraints import Teacher
+                        from src.app.constraints import Teacher
                         cl = Teacher.teachers_overlapping(teachers[arguments['teacher_1']],
                                                           teachers[arguments['teacher_2']])
                     case 'number_of_teaching_days':
-                        from constraints import Teacher
+                        from src.app.constraints import Teacher
                         cl = Teacher.number_of_teaching_days(teachers[arguments['teacher']], arguments['number'])
                     case 'forbidden_period_for_teacher':
-                        from constraints import Teacher
+                        from src.app.constraints import Teacher
                         cl = Teacher.forbidden_period_for_teacher(teachers[arguments['teacher']], arguments['day'],
                                                                   arguments['period'])
                     case 'forbidden_period_for_group':
-                        from constraints import Group
+                        from src.app.constraints import Group
                         cl = Group.forbidden_period_for_group(groups[arguments['group']], arguments['day'],
                                                               arguments['period'])
                     case 'forbidden_day_for_teacher':
-                        from constraints import Teacher
+                        from src.app.constraints import Teacher
                         cl = Teacher.forbidden_day_for_teacher(teachers[arguments['teacher']], arguments['day'])
                     case 'forbidden_day_for_group':
-                        from constraints import Group
+                        from src.app.constraints import Group
                         cl = Group.forbidden_day_for_group(groups[arguments['group']], arguments['day'])
                 assumption_h = assumption_hash(cl) % MOD
                 # cls.assumptions.append(assumption_h)

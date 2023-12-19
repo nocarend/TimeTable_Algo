@@ -100,7 +100,7 @@ if __name__ == '__main__':
     import sys
 
     args = sys.argv
-    filename = "config_example.json"
+    filename = "../resources/config_example.json"
     if len(args) > 1:
         filename = args[1]
     Algorithm(filename).calculate()

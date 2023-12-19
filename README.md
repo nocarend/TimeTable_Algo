@@ -15,7 +15,7 @@ same time.
 
 ### Number of teaching days.
 
-The condition that a teacher ``t`` teaches for exactly ``n`` days in a week.
+The condition that a teacher ``t`` teaches maximum for ``n`` days in a week.
 
 ### Idle periods.
 

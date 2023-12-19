@@ -1,7 +1,7 @@
 from itertools import product
 
-from constraints import days, periods
-from implied_variables import tsgndpr, iktdp
+from src.app.constraints import days, periods
+from src.app.implied_variables import tsgndpr, iktdp
 from utils import single
 
 

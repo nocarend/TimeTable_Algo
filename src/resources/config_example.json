@@ -416,22 +416,23 @@
     {
       "name": "groups_overlapping",
       "args": {
+        "teacher_1": null,
+        "teacher_2": null,
         "group_1": 21215,
-        "group_2": 21201
-      }
-    },
-    {
-      "name": "groups_overlapping",
-      "args": {
-        "group_1": 21215,
-        "group_2": 21216
+        "group_2": 21201,
+        "teacher": null,
+        "number": null,
+        "day": null,
+        "period": null
       }
     },
     {
       "name": "teachers_overlapping",
       "args": {
         "teacher_1": "permyakov",
-        "teacher_2": "nedelko"
+        "teacher_2": "nedelko",
+        "group_1": null,
+        "group_2": null
       }
     },
     {
