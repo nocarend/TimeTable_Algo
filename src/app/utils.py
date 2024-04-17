@@ -1,7 +1,7 @@
 import json
 from typing import List, Iterable
 
-from src.app.implied_variables import assumption_hash, MOD
+from implied_variables import assumption_hash, MOD
 
 
 def single(variables: List):

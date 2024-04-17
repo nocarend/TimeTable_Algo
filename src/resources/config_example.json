@@ -409,7 +409,7 @@
         21215,
         21216
       ],
-      "times_in_a_week": 2
+      "times_in_a_week": 10
     }
   ],
   "constraints": [
@@ -419,11 +419,7 @@
         "teacher_1": null,
         "teacher_2": null,
         "group_1": 21215,
-        "group_2": 21201,
-        "teacher": null,
-        "number": null,
-        "day": null,
-        "period": null
+        "group_2": 21201
       }
     },
     {
