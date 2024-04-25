@@ -23,6 +23,11 @@ class Reader:
     clauses = []
     assumptions = []
 
+    teachers: None
+    subjects: None
+    group_lessons: None
+    teacher_lessons: None
+
     @classmethod
     def read_input(cls, filename):
         def list_to_dict(sample_list):
@@ -75,14 +80,23 @@ class Reader:
                     case 'exact_time':
                         from constraints import Lesson
                         cl = []
+                        grs = list(groups[i] for i in arguments['groups'])
                         for i in arguments['groups']:
-                            g=groups[i]
+                            g = groups[i]
                             cl.extend(Lesson.exact_time_for_lesson(t=teachers[arguments['teacher']],
                                                                    s=subjects[arguments['subject']],
                                                                    g=g,
                                                                    d=arguments['day'],
                                                                    p=arguments['period'],
                                                                    r=original_rooms[arguments['room']]))
+                            # for j in group_lessons[g]:
+                            #     if j[1] == g:
+                            #         j[2] -= 1
+                            # group_lessons[g][2] -= 1
+                        # for j in teacher_lessons[teachers[arguments['teacher']]].values():
+                        #     for k in j:
+                        #         if sorted(k[1]) == sorted(grs):
+                        #             k[2] -= 1
 
                 assumption_h = assumption_hash(cl) % MOD
                 # cls.assumptions.append(assumption_h)
@@ -114,9 +128,9 @@ class Reader:
                 gr = [groups[idd] for idd in d["groups"]]
                 n_times = d["times_in_a_week"]
                 full_name = subjects[f"{d['subject']}_{type}"]
-                teacher_lessons[teacher_id][type].append((full_name, gr, n_times))
+                teacher_lessons[teacher_id][type].append([full_name, gr, n_times])
                 for g in gr:
-                    group_lessons[g].append((full_name, teacher_id, n_times))
+                    group_lessons[g].append([full_name, teacher_id, n_times])
             return teachers, subjects, group_lessons, teacher_lessons
 
         with open(filename, 'r') as file:
@@ -125,5 +139,6 @@ class Reader:
             rooms, original_rooms = read_rooms(data)
             plan = read_plan(data)
             teachers, subjects, group_lessons, teacher_lessons = get_teachers_and_subjects_list(plan)
+            # print(group_lessons, '\n', teacher_lessons)
             read_constraints(data, groups, teachers)
         return cls.clauses, groups, teachers, group_lessons, teacher_lessons, rooms, subjects, original_rooms, cls.assumptions

@@ -100,9 +100,19 @@ class Lesson:
                  -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
         return res
 
+    s = set()
+
     @classmethod
     def exact_time_for_lesson(cls, t, s, g, d, p, r):
-        return [[tsgndpr(t=t, s=s, g=g, d=d, p=p, r=r)]]
+        i = 1
+        while (t, s, g, d, p, r, i) in cls.s:
+            i += 1
+        cls.s.add((t, s, g, d, p, r, i))
+        res = [[tsgndpr(t=t, s=s, g=g, n=i, d=d, p=p, r=r)]]
+        for i_d, i_p in product(days, periods):
+            if i_d != d and i_p != p:
+                res.append([-tsgndpr(t=t, s=s, g=g, n=i, d=i_d, p=i_p, r=r)])
+        return res
 
 
 def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
