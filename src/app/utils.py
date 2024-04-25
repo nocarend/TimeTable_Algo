@@ -49,29 +49,41 @@ class Reader:
                 cl = []
                 match given_name:
                     case 'groups_overlapping':
-                        from src.app.constraints import Group
+                        from constraints import Group
                         cl = Group.groups_overlapping(groups[arguments['group_1']], groups[arguments['group_2']])
                     case 'teachers_overlapping':
-                        from src.app.constraints import Teacher
+                        from constraints import Teacher
                         cl = Teacher.teachers_overlapping(teachers[arguments['teacher_1']],
                                                           teachers[arguments['teacher_2']])
                     case 'number_of_teaching_days':
-                        from src.app.constraints import Teacher
+                        from constraints import Teacher
                         cl = Teacher.number_of_teaching_days(teachers[arguments['teacher']], arguments['number'])
                     case 'forbidden_period_for_teacher':
-                        from src.app.constraints import Teacher
+                        from constraints import Teacher
                         cl = Teacher.forbidden_period_for_teacher(teachers[arguments['teacher']], arguments['day'],
                                                                   arguments['period'])
                     case 'forbidden_period_for_group':
-                        from src.app.constraints import Group
+                        from constraints import Group
                         cl = Group.forbidden_period_for_group(groups[arguments['group']], arguments['day'],
                                                               arguments['period'])
                     case 'forbidden_day_for_teacher':
-                        from src.app.constraints import Teacher
+                        from constraints import Teacher
                         cl = Teacher.forbidden_day_for_teacher(teachers[arguments['teacher']], arguments['day'])
                     case 'forbidden_day_for_group':
-                        from src.app.constraints import Group
+                        from constraints import Group
                         cl = Group.forbidden_day_for_group(groups[arguments['group']], arguments['day'])
+                    case 'exact_time':
+                        from constraints import Lesson
+                        cl = []
+                        for i in arguments['groups']:
+                            g=groups[i]
+                            cl.extend(Lesson.exact_time_for_lesson(t=teachers[arguments['teacher']],
+                                                                   s=subjects[arguments['subject']],
+                                                                   g=g,
+                                                                   d=arguments['day'],
+                                                                   p=arguments['period'],
+                                                                   r=original_rooms[arguments['room']]))
+
                 assumption_h = assumption_hash(cl) % MOD
                 # cls.assumptions.append(assumption_h)
                 cls.clauses.extend(cl)

@@ -100,6 +100,10 @@ class Lesson:
                  -tsgndpr(t=t, s=s, g=g, n=n + 1, d=d + 1)])
         return res
 
+    @classmethod
+    def exact_time_for_lesson(cls, t, s, g, d, p, r):
+        return [[tsgndpr(t=t, s=s, g=g, d=d, p=p, r=r)]]
+
 
 def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
     cl = []

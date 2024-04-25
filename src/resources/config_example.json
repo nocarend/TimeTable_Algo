@@ -416,8 +416,6 @@
     {
       "name": "groups_overlapping",
       "args": {
-        "teacher_1": null,
-        "teacher_2": null,
         "group_1": 21215,
         "group_2": 21201
       }
@@ -426,9 +424,7 @@
       "name": "teachers_overlapping",
       "args": {
         "teacher_1": "permyakov",
-        "teacher_2": "nedelko",
-        "group_1": null,
-        "group_2": null
+        "teacher_2": "nedelko"
       }
     },
     {
@@ -515,6 +511,28 @@
       "args": {
         "day": 3,
         "group": 21215
+      }
+    },
+    {
+      "name": "exact_time",
+      "args": {
+        "teacher": "nedelko",
+        "subject": "machine_learning_methods_prac",
+        "day": 5,
+        "period": 5,
+        "room": 4220,
+        "groups": [21213]
+      }
+    },
+    {
+      "name": "exact_time",
+      "args": {
+        "teacher": "fizruk",
+        "subject": "physical_culture_lec",
+        "day": 1,
+        "period": 7,
+        "room": 1274,
+        "groups": [21215, 21214, 21216, 21213]
       }
     }
   ]
