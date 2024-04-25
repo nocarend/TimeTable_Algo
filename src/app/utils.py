@@ -27,6 +27,7 @@ class Reader:
     subjects: None
     group_lessons: None
     teacher_lessons: None
+    original_rooms: None
 
     @classmethod
     def read_input(cls, filename):
@@ -80,7 +81,7 @@ class Reader:
                     case 'exact_time':
                         from constraints import Lesson
                         cl = []
-                        grs = list(groups[i] for i in arguments['groups'])
+                        # grs = list(groups[i] for i in arguments['groups'])
                         for i in arguments['groups']:
                             g = groups[i]
                             cl.extend(Lesson.exact_time_for_lesson(t=teachers[arguments['teacher']],
@@ -137,6 +138,7 @@ class Reader:
             data = json.load(file)
             groups = read_groups(data)
             rooms, original_rooms = read_rooms(data)
+            cls.original_rooms = original_rooms
             plan = read_plan(data)
             teachers, subjects, group_lessons, teacher_lessons = get_teachers_and_subjects_list(plan)
             # print(group_lessons, '\n', teacher_lessons)

@@ -104,14 +104,18 @@ class Lesson:
 
     @classmethod
     def exact_time_for_lesson(cls, t, s, g, d, p, r):
+        from utils import Reader
         i = 1
-        while (t, s, g, d, p, r, i) in cls.s:
+        while (t, s, g, i) in cls.s:
             i += 1
-        cls.s.add((t, s, g, d, p, r, i))
-        res = [[tsgndpr(t=t, s=s, g=g, n=i, d=d, p=p, r=r)]]
-        for i_d, i_p in product(days, periods):
-            if i_d != d and i_p != p:
-                res.append([-tsgndpr(t=t, s=s, g=g, n=i, d=i_d, p=i_p, r=r)])
+        cls.s.add((t, s, g, i))
+        res = [[tsgndpr(t=t, s=s, g=g, n=i, d=d, p=p, r=r)], [tsgndpr(t=t, s=s, g=g, d=d, p=p)]]
+        # print(Reader.original_rooms)
+        # for i_d, i_p, i_r in product(days, periods, Reader.original_rooms.values()):
+        #     if i_d != d and i_p != p and i_r != r:
+        #         res.append([-tsgndpr(t=t, s=s, g=g, n=i, d=i_d, p=i_p, r=i_r)])
+        # print(len(res))
+        # print(res)
         return res
 
 
