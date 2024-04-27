@@ -15,7 +15,6 @@ class Correctness:
     def _room_weak(self):
         def _room_teacher(arg_1, arg_2, _type=False):
             res = []
-            print(arg_1, arg_2)
             for d, p, a_1 in product(days, periods, arg_1.values()):
                 v_x_tdpr = []
                 for a_2 in arg_2.values():
