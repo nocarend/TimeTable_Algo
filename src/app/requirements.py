@@ -15,6 +15,7 @@ class Correctness:
     def _room_weak(self):
         def _room_teacher(arg_1, arg_2, _type=False):
             res = []
+            print(arg_1, arg_2)
             for d, p, a_1 in product(days, periods, arg_1.values()):
                 v_x_tdpr = []
                 for a_2 in arg_2.values():
@@ -113,15 +114,27 @@ class Mixed:
                         continue
                     g_1 = sgn[1][0]
                     for n in range(1, sgn[2] + 1):
-                        single_x_tsgndp = []
+                        # single_x_tsgndp = []
                         for g_j, d, p in product(sgn[1], days, periods):
                             x_tsgndp = tsgndpr(t=t, s=s, g=g_1, n=n, d=d, p=p)
                             if g_1 == g_j:
-                                single_x_tsgndp.append(x_tsgndp)
+                                # single_x_tsgndp.append(x_tsgndp)
                                 continue
                             x_tsgjndp = tsgndpr(t=t, s=s, g=g_j, n=n, d=d, p=p)
                             res.extend([[-x_tsgndp, x_tsgjndp], [x_tsgndp, -x_tsgjndp]])
-                        res.extend(single(single_x_tsgndp))
+                        # res.extend(single(single_x_tsgndp))
+        "22"
+        for t, subjs in self.teacher_lessons.items():
+            for d, p in product(days, periods):
+                single_x_tsgndp = []
+                for sub_type, sub_arr in subjs.items():
+                    if sub_type == 'lec':
+                        continue
+                    for sgn in sub_arr:
+                        s = sgn[0]
+                        for g, n in product(sgn[1], range(1, sgn[2] + 1)):
+                            single_x_tsgndp.append(tsgndpr(t=t, s=s, g=g, n=n, d=d, p=p))
+                res.extend(single(single_x_tsgndp))
         return res
 
     def _mixed_third(self):
