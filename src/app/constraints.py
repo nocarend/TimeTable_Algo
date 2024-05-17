@@ -1,7 +1,7 @@
 from itertools import product
 
 from implied_variables import tsgndpr, iktdp, lkgd
-from utils import cardinality, single
+from utils import *
 
 period_length = 2
 days = range(1, 7)
@@ -20,6 +20,9 @@ class Teacher:
     @classmethod
     def forbidden_period_for_teacher(cls, t, d, p):
         # return [[-tsgndpr(t=t, d=d, p=p)], [-tsgndpr(t=t, d=d)], [-tsgndpr(t=t, p=p)]]
+        # TODO heuristic check, !
+        if t in exact_teachers and (d, p) in exact_teachers[t]:
+            return [[]]
         return [[-tsgndpr(t=t, d=d, p=p)]]
 
     @classmethod
@@ -39,6 +42,8 @@ class Teacher:
         v_i_tdp = []
         res = []
         for d, p in product(days, periods):
+            # if t in exact_teachers and (d, p) in exact_teachers[t]:
+            #     continue
             v_i_tdp.append(iktdp(t=t, d=d, p=p))
         for clause in cardinality(v_i_tdp, n):
             res.append(clause)
@@ -49,6 +54,9 @@ class Teacher:
         res = []
         v_i_tdp = []
         for p in range(periods.start, periods.stop - 1):
+            # TODO heuristic check
+            if t in exact_teachers and (d, p) in exact_teachers[t]:
+                continue
             v_i_tdp.append(iktdp(t=t, d=d, p=p))
         for clause in single(v_i_tdp):
             res.append(clause)
@@ -65,16 +73,27 @@ class Group:
     def group_work_day_limited(cls, g, d, n):
         res = []
         for k in range(n + 1, periods.stop):
+            # TODO heuristic check
+            if g in exact_groups and (d, k) in exact_groups[k]:
+                continue
             res.append([-lkgd(k=k, g=g, d=d)])
         return res
 
     @classmethod
     def forbidden_period_for_group(cls, g, d, p):
+        if g in exact_groups and (d, p) in exact_groups[g]:
+            return [[]]
         return [[-tsgndpr(g=g, d=d, p=p)]]
 
     @classmethod
     def forbidden_day_for_group(cls, g, d):
-        return [[-tsgndpr(g=g, d=d, p=p)] for p in periods]  # because ef students are always available lol
+        res = []
+        for p in periods:
+            # TODO heuristic check
+            if g in exact_groups and (d, p) in exact_groups[g]:
+                continue
+            res.append([-tsgndpr(g=g, d=d, p=p)])
+        return res
 
     @classmethod
     def groups_overlapping(cls, g_1, g_2):
@@ -104,11 +123,14 @@ class Lesson:
 
     @classmethod
     def exact_time_for_lesson(cls, t, s, g, d, p, r):
-        from utils import Reader
+        # TODO can it be optimized?
         i = 1
         while (t, s, g, i) in cls.s:
             i += 1
         cls.s.add((t, s, g, i))
+        # if t in exact_teachers and (d, p) in exact_teachers[t] or \
+        #     g in exact_groups and (d, p) in exact_groups[g] or \
+        #     r in exact_rooms
         res = [[tsgndpr(t=t, s=s, g=g, n=i, d=d, p=p, r=r)], [tsgndpr(t=t, s=s, g=g, d=d, p=p)]]
         # print(Reader.original_rooms)
         # for i_d, i_p, i_r in product(days, periods, Reader.original_rooms.values()):
@@ -122,6 +144,11 @@ class Lesson:
 def group_teacher_overlapping(g_1=0, g_2=0, t_1=0, t_2=0):
     cl = []
     for d, p in product(days, periods):
+        if (t_1 in exact_teachers and (d, p) in exact_teachers[t_1] or
+                g_1 in exact_groups and (d, p) in exact_groups[g_1] or
+                t_2 in exact_teachers and (d, p) in exact_teachers[t_2] or
+                g_2 in exact_groups and (d, p) in exact_groups[g_2]):
+            continue
         x_t1g1dp = tsgndpr(t=t_1, g=g_1, d=d, p=p)
         x_t2g2dp = tsgndpr(t=t_2, g=g_2, d=d, p=p)
         cl.extend([[-x_t1g1dp, -x_t2g2dp], [-x_t2g2dp, -x_t1g1dp]])

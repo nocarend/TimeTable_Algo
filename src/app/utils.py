@@ -100,14 +100,14 @@ class Reader:
                                                                    p=p,
                                                                    r=r))
                             if g not in exact_groups:
-                                exact_groups[g] = []
+                                exact_groups[g] = set()
                             if t not in exact_teachers:
-                                exact_teachers[t] = []
+                                exact_teachers[t] = set()
                             if r not in exact_rooms:
-                                exact_rooms[r] = []
-                            exact_teachers[t].append((d, p))
-                            exact_groups[g].append((d, p))
-                            exact_rooms[r].append((d, p))
+                                exact_rooms[r] = set()
+                            exact_teachers[t].add((d, p))
+                            exact_groups[g].add((d, p))
+                            exact_rooms[r].add((d, p))
                             # for j in group_lessons[g]:
                             #     if j[1] == g:
                             #         j[2] -= 1
