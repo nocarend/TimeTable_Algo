@@ -3,6 +3,10 @@ from typing import List, Iterable
 
 from implied_variables import assumption_hash, MOD
 
+exact_teachers = {}
+exact_groups = {}
+exact_rooms = {}
+
 
 def single(variables: List):
     l = []
@@ -84,17 +88,31 @@ class Reader:
                         # grs = list(groups[i] for i in arguments['groups'])
                         for i in arguments['groups']:
                             g = groups[i]
-                            cl.extend(Lesson.exact_time_for_lesson(t=teachers[arguments['teacher']],
-                                                                   s=subjects[arguments['subject']],
+                            t = teachers[arguments['teacher']]
+                            s = subjects[arguments['subject']]
+                            d = arguments['day']
+                            p = arguments['period']
+                            r = original_rooms[arguments['room']]
+                            cl.extend(Lesson.exact_time_for_lesson(t=t,
+                                                                   s=s,
                                                                    g=g,
-                                                                   d=arguments['day'],
-                                                                   p=arguments['period'],
-                                                                   r=original_rooms[arguments['room']]))
+                                                                   d=d,
+                                                                   p=p,
+                                                                   r=r))
+                            if g not in exact_groups:
+                                exact_groups[g] = []
+                            if t not in exact_teachers:
+                                exact_teachers[t] = []
+                            if r not in exact_rooms:
+                                exact_rooms[r] = []
+                            exact_teachers[t].append((d, p))
+                            exact_groups[g].append((d, p))
+                            exact_rooms[r].append((d, p))
                             # for j in group_lessons[g]:
                             #     if j[1] == g:
                             #         j[2] -= 1
                             # group_lessons[g][2] -= 1
-                        # for j in teacher_lessons[teachers[arguments['teacher']]].values():
+                        # for j in te+++--+-002222222222222222222222222222222222222+2222222+acher_lessons[teachers[arguments['teacher']]].values():
                         #     for k in j:
                         #         if sorted(k[1]) == sorted(grs):
                         #             k[2] -= 1
