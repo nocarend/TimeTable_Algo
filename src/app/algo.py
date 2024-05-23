@@ -34,6 +34,7 @@ class Algorithm:
             self._print_input(solver.get_model())
         else:
             self._print_unsatisfiable()
+        print(f"Number of clauses: {len(self.clauses)}", file=sys.stderr)
 
     def _print_input(self, model):
         print('SUCCESSFULLY')
@@ -98,9 +99,15 @@ class Algorithm:
 
 if __name__ == '__main__':
     import sys
+    import time
 
     args = sys.argv
     filename = "../resources/config_example.json"
     if len(args) > 1:
         filename = args[1]
+    start = time.time()
     Algorithm(filename).calculate()
+    end = time.time()
+    print(f"Time: {end - start}", file=sys.stderr)
+    # создать массив forbidden time, где будут периоды и дни, в которые для данного препода ничего не генерируется
+    # Для остальных это время в данном кабинете и группе будет запрещено

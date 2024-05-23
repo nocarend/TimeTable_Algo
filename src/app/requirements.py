@@ -4,6 +4,8 @@ from constraints import days, periods
 from implied_variables import tsgndpr, iktdp
 from utils import single
 
+from utils import *
+
 
 class Correctness:
     def __init__(self, teachers, original_rooms, rooms, teacher_lessons):
@@ -14,10 +16,19 @@ class Correctness:
 
     def _room_weak(self):
         def _room_teacher(arg_1, arg_2, _type=False):
+            # TODO heuristic check, bad?
             res = []
+            ch_1 = exact_rooms
+            ch_2 = exact_teachers
+            if not _type:
+                ch_1, ch_2 = ch_2, ch_1
             for d, p, a_1 in product(days, periods, arg_1.values()):
                 v_x_tdpr = []
+                if a_1 in ch_1 and (d, p) in ch_1[a_1]:
+                    continue
                 for a_2 in arg_2.values():
+                    if a_2 in ch_2 and (d, p) in ch_2[a_2]:
+                        continue
                     v_x_tdpr.append(tsgndpr(t=a_1 if not _type else a_2, d=d, p=p, r=a_2 if not _type else a_1))
                 res.extend(single(v_x_tdpr))
             return res
@@ -27,25 +38,32 @@ class Correctness:
                                                                                  True)
 
     def _room_strong(self):
+        # TODO heuristic check
         res = []
-        for (t, subjs), d, p, (k_r, r_t) in product(self.teacher_lessons.items(), days, periods,
-                                                    self.rooms.items()):
-            if k_r != 'lec':  # сильно замедляет, but...
-                ss = []
-                for r, (sub_type, sub_arr) in product(r_t, subjs.items()):
-                    if sub_type != k_r:
-                        continue  # hz
-                    for sgn in sub_arr:
-                        for n, g in product(range(1, sgn[2] + 1), sgn[1]):
-                            ss.append(tsgndpr(t=t, s=sgn[0], g=g, n=n, d=d, p=p, r=r))
-                res.extend(single(ss))
+        for (t, subjs), d, p in product(self.teacher_lessons.items(), days, periods):
+            if t in exact_teachers and (d, p) in exact_teachers[t]:
                 continue
-            for r in r_t:
-                x_tdpr = tsgndpr(t=t, d=d, p=p, r=r)
-                for sub_type, sub_arr in subjs.items():
-                    for sgn in sub_arr:
-                        for n, g in product(range(1, sgn[2] + 1), sgn[1]):
-                            res.append([-tsgndpr(t=t, s=sgn[0], g=g, n=n, d=d, p=p, r=r), x_tdpr])
+            for (k_r, r_t) in self.rooms.items():
+                if k_r != 'lec':  # сильно замедляет, but...
+                    ss = []
+                    for r, (sub_type, sub_arr) in product(r_t, subjs.items()):
+                        if r in exact_rooms and (d, p) in exact_rooms[r]:
+                            continue
+                        if sub_type != k_r:
+                            continue  # hz
+                        for sgn in sub_arr:
+                            for n, g in product(range(1, sgn[2] + 1), sgn[1]):
+                                ss.append(tsgndpr(t=t, s=sgn[0], g=g, n=n, d=d, p=p, r=r))
+                    res.extend(single(ss))
+                    continue
+                for r in r_t:
+                    if r in exact_rooms and (d, p) in exact_rooms[r]:
+                        continue
+                    x_tdpr = tsgndpr(t=t, d=d, p=p, r=r)
+                    for sub_type, sub_arr in subjs.items():
+                        for sgn in sub_arr:
+                            for n, g in product(range(1, sgn[2] + 1), sgn[1]):
+                                res.append([-tsgndpr(t=t, s=sgn[0], g=g, n=n, d=d, p=p, r=r), x_tdpr])
         return res
 
     def room_all(self):
